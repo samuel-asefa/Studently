@@ -3,23 +3,73 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Task List</title>
+    <title>Studently</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <!-- Title -->
+    <header>
+        <h1 class="page-title">Studently</h1>
+    </header>
+
+    <!-- Main Content -->
     <div class="container">
-        <h1>Task List</h1>
-        <div class="category-input">
-            <input type="text" id="newCategoryInput" placeholder="Add a new category..." />
-            <button id="addCategoryButton">Add Category</button>
+        <!-- Categories Section -->
+        <div class="categories-section">
+            <h2>Categories</h2>
+            <div class="category-input">
+                <input type="text" id="newCategoryInput" placeholder="Add a new category..." />
+                <div id="colorPalette" class="color-palette"></div>
+                <button id="addCategoryButton">Add Category</button>
+            </div>
+            <ul id="categoryList"></ul>
         </div>
-        <div class="task-input">
-            <input type="text" id="taskInput" placeholder="Enter your task here..." />
-            <select id="categorySelect"></select>
-            <button id="addTaskButton">Add Task</button>
+
+        <!-- Tasks Section -->
+        <div class="tasks-section">
+            <h2>Tasks</h2>
+            <div class="task-input">
+                <input type="text" id="taskInput" placeholder="Enter your task here..." />
+                <select id="categorySelect"></select>
+                <button id="addTaskButton">Add Task</button>
+            </div>
+            <ul id="taskList"></ul>
         </div>
-        <ul id="taskList"></ul>
     </div>
+
+    <!-- Settings Popup -->
+    <div id="settingsPopup" class="popup">
+        <div class="popup-content">
+            <h2>Settings</h2>
+            <div class="settings-group">
+                <label>Change Theme:</label>
+                <select id="themeSelect">
+                    <option value="light">Light</option>
+                    <option value="dark">Dark</option>
+                </select>
+            </div>
+            <div class="settings-group">
+                <label>Change Font:</label>
+                <div class="font-buttons">
+                    <button class="font-btn" data-font="Arial">Arial</button>
+                    <button class="font-btn" data-font="Roboto">Roboto</button>
+                    <button class="font-btn" data-font="Times New Roman">Times New Roman</button>
+                </div>
+            </div>
+            <button id="closeSettingsButton">Close</button>
+        </div>
+    </div>
+
+    <!-- Settings Button -->
+    <button id="settingsButton" class="settings-button">⚙</button>
+
+    <!-- Footer -->
+    <footer>
+        <p>
+            <i>Created by <a href="https://samuel-asefa.github.io" target="_blank">Samuel A.</a></i>
+        </p>
+    </footer>
+
     <script src="main.js"></script>
 </body>
 </html>
