@@ -3,11 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Studently</title>
+    <title>Studently | Modern Task Management</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <meta name="description" content="Studently - A modern task management app for students">
 </head>
 <body>
-    <!-- Title -->
+    <!-- Header -->
     <header>
         <h1 class="page-title">Studently</h1>
     </header>
@@ -18,9 +22,9 @@
         <div class="categories-section">
             <h2>Categories</h2>
             <div class="category-input">
-                <input type="text" id="newCategoryInput" placeholder="Add a new category..." />
+                <input type="text" id="newCategoryInput" placeholder="New category name..." />
                 <div id="colorPalette" class="color-palette"></div>
-                <button id="addCategoryButton">Add Category</button>
+                <button id="addCategoryButton">Add</button>
             </div>
             <ul id="categoryList"></ul>
         </div>
@@ -29,8 +33,10 @@
         <div class="tasks-section">
             <h2>Tasks</h2>
             <div class="task-input">
-                <input type="text" id="taskInput" placeholder="Enter your task here..." />
-                <select id="categorySelect"></select>
+                <input type="text" id="taskInput" placeholder="What do you need to do?" />
+                <select id="categorySelect">
+                    <option value="">Select Category</option>
+                </select>
                 <button id="addTaskButton">Add Task</button>
             </div>
             <ul id="taskList"></ul>
@@ -42,21 +48,21 @@
         <div class="popup-content">
             <h2>Settings</h2>
             <div class="settings-group">
-                <label>Change Theme:</label>
+                <label>Theme</label>
                 <select id="themeSelect">
-                    <option value="light">Light</option>
-                    <option value="dark">Dark</option>
+                    <option value="light">Light Mode</option>
+                    <option value="dark">Dark Mode</option>
                 </select>
             </div>
             <div class="settings-group">
-                <label>Change Font:</label>
+                <label>Font Style</label>
                 <div class="font-buttons">
-                    <button class="font-btn" data-font="Arial">Arial</button>
+                    <button class="font-btn" data-font="Inter">Inter</button>
                     <button class="font-btn" data-font="Roboto">Roboto</button>
-                    <button class="font-btn" data-font="Times New Roman">Times New Roman</button>
+                    <button class="font-btn" data-font="Arial">Arial</button>
                 </div>
             </div>
-            <button id="closeSettingsButton">Close</button>
+            <button id="closeSettingsButton">Save Changes</button>
         </div>
     </div>
 
@@ -65,9 +71,7 @@
 
     <!-- Footer -->
     <footer>
-        <p>
-            <i>Created by <a href="https://samuel-asefa.github.io" target="_blank">Samuel A.</a></i>
-        </p>
+        <p>Designed with ♥ by <a href="https://samuel-asefa.github.io" target="_blank">Samuel A.</a></p>
     </footer>
 
     <script src="main.js"></script>
