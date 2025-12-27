@@ -1,38 +1,12 @@
-# sv
+<h2 align="center"><em><code>Studently</code></em></h2>
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+An intuitive and customizable task list application with clean UI.
 
-## Creating a project
+## Features
 
-If you're seeing this, you've probably already done this step. Congrats!
-
-```bash
-# create a new project in the current directory
-npx sv create
-
-# create a new project in my-app
-npx sv create my-app
-```
-
-## Developing
-
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
-
-```bash
-npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
-```
-
-## Building
-
-To create a production version of your app:
-
-```bash
-npm run build
-```
-
-You can preview the production build with `npm run preview`.
-
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+- Create custom categories with color-coded organization
+- Add and manage tasks with category tags
+- Light and dark mode support
+- Multiple font options (Inter, Roboto, Arial)
+- All data persists in local storage
+- Responsive design for any screen size
