@@ -3,14 +3,35 @@ import { browser } from '$app/environment';
 
 // A custom store that syncs with localStorage
 const createPersistentStore = (key, startValue) => {
-	const initialValue = browser ? window.localStorage.getItem(key) : null;
-	const store = writable(initialValue ? JSON.parse(initialValue) : startValue);
-
-	store.subscribe((value) => {
-		if (browser) {
-			window.localStorage.setItem(key, JSON.stringify(value));
+	let initialValue = startValue;
+	
+	// Only access localStorage in the browser
+	if (browser) {
+		try {
+			const storedValue = window.localStorage.getItem(key);
+			if (storedValue !== null) {
+				initialValue = JSON.parse(storedValue);
+			}
+		} catch (error) {
+			// If parsing fails, try to use the raw value (for backward compatibility)
+			const rawValue = window.localStorage.getItem(key);
+			if (rawValue !== null) {
+				initialValue = rawValue;
+				// Re-save it in the correct format
+				window.localStorage.setItem(key, JSON.stringify(rawValue));
+			}
 		}
-	});
+	}
+
+	const store = writable(initialValue);
+
+	// Only subscribe to changes in the browser
+	if (browser) {
+		store.subscribe((value) => {
+			window.localStorage.setItem(key, JSON.stringify(value));
+		});
+	}
+
 	return store;
 };
 

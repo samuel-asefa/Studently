@@ -1,5 +1,5 @@
 <footer>
-	<p>Designed by <a href="https://samuel-asefa.github.io" target="_blank">Sammy Asefa</a></p>
+	<p>Created by <a href="https://samuelasefa.vercel.app" target="_blank">Sammy Asefa</a></p>
 </footer>
 
 <style>

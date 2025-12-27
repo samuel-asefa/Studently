@@ -23,3 +23,19 @@ declare module "svelte/elements" {
 }
 
 export {};
+
+
+declare module "$app/types" {
+	export interface AppTypes {
+		RouteId(): "/";
+		RouteParams(): {
+			
+		};
+		LayoutParams(): {
+			"/": Record<string, never>
+		};
+		Pathname(): "/";
+		ResolvedPathname(): `${"" | `/${string}`}${ReturnType<AppTypes['Pathname']>}`;
+		Asset(): "/favicon.png" | string & {};
+	}
+}

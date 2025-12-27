@@ -1,12 +1,15 @@
 <script>
-    // Script content remains the same
 	import { theme, font } from '../stores.js';
 	export let show = false;
+
+	function closeSettings() {
+		show = false;
+	}
 </script>
 
 {#if show}
-	<div class="popup" on:click|self={() => (show = false)} role="dialog">
-		<div class="popup-content">
+	<div class="popup" on:click={closeSettings} role="dialog" aria-modal="true">
+		<div class="popup-content" on:click|stopPropagation role="document">
 			<h2>Settings</h2>
 			<div class="settings-group">
 				<label for="themeSelect">Theme</label>
@@ -23,14 +26,14 @@
 					<button class="font-btn" class:active={$font === 'Arial'} on:click={() => ($font = 'Arial')}>Arial</button>
 				</div>
 			</div>
-			<button class="save-btn" on:click={() => (show = false)}>Save Changes</button>
+			<button class="save-btn" on:click={closeSettings}>Save Changes</button>
 		</div>
 	</div>
 {/if}
 
 <style>
 	.popup {
-		display: none;
+		display: flex;
 		position: fixed;
 		top: 0;
 		left: 0;
@@ -41,10 +44,16 @@
 		z-index: 1000;
 		justify-content: center;
 		align-items: center;
+		animation: fadeIn 0.2s ease-out;
 	}
 
-	.popup:global(.show) {
-		display: flex;
+	@keyframes fadeIn {
+		from {
+			opacity: 0;
+		}
+		to {
+			opacity: 1;
+		}
 	}
 
 	.popup-content {
@@ -53,8 +62,20 @@
 		border-radius: var(--radius-lg);
 		box-shadow: var(--shadow-lg);
 		max-width: 450px;
-		width: 100%;
+		width: 90%;
 		position: relative;
+		animation: slideUp 0.3s ease-out;
+	}
+
+	@keyframes slideUp {
+		from {
+			transform: translateY(20px);
+			opacity: 0;
+		}
+		to {
+			transform: translateY(0);
+			opacity: 1;
+		}
 	}
 
 	h2 {
@@ -62,6 +83,7 @@
 		font-weight: 600;
 		margin-bottom: 1.5rem;
 		text-align: left;
+		color: var(--text-primary);
 	}
 
 	.settings-group {
@@ -74,6 +96,7 @@
 		font-weight: 500;
 		margin-bottom: 0.5rem;
 		color: var(--text-secondary);
+		font-size: 0.9rem;
 	}
 
 	.font-buttons {
@@ -89,12 +112,13 @@
 		color: var(--text-primary);
 		background: var(--surface-hover);
 		border: 1px solid var(--border);
+		height: auto;
 	}
 
 	.font-btn:hover {
 		background: var(--primary-light);
 		color: var(--primary);
-        transform: translateY(0); /* Override global button hover */
+		transform: translateY(0);
 	}
 
 	.font-btn.active {
@@ -102,8 +126,9 @@
 		color: white;
 		border-color: var(--primary);
 	}
-    
-    .save-btn {
-        width: 100%;
-    }
+
+	.save-btn {
+		width: 100%;
+		margin-top: 0.5rem;
+	}
 </style>

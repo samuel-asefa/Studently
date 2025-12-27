@@ -1,5 +1,4 @@
 <script>
-    // Script content remains the same
 	import { categories, tasks } from '../stores.js';
 	import { slide } from 'svelte/transition';
 
@@ -12,18 +11,26 @@
 	let selectedColor = predefinedColors[0];
 
 	function handleAddCategory() {
-		if (newCategoryName && !$categories[newCategoryName]) {
-			$categories[newCategoryName] = selectedColor;
-			newCategoryName = '';
-		} else if ($categories[newCategoryName]) {
-			alert('This category already exists!');
+		const trimmedName = newCategoryName.trim();
+		if (!trimmedName) {
+			alert('Please enter a category name.');
+			return;
 		}
+		if ($categories[trimmedName]) {
+			alert('This category already exists!');
+			return;
+		}
+		categories.update(cats => ({ ...cats, [trimmedName]: selectedColor }));
+		newCategoryName = '';
 	}
 
 	function handleDeleteCategory(name) {
 		if (confirm(`Delete category "${name}"? All tasks in this category will also be deleted.`)) {
-			$tasks = $tasks.filter(task => task.category !== name);
-			delete $categories[name];
+			tasks.update(t => t.filter(task => task.category !== name));
+			categories.update(cats => {
+				const { [name]: _, ...rest } = cats;
+				return rest;
+			});
 		}
 	}
 </script>
@@ -39,15 +46,14 @@
 		/>
 		<div class="color-palette">
 			{#each predefinedColors as color}
-				<div
+				<button
+					type="button"
 					class="color-option"
 					class:selected={color === selectedColor}
 					style="background-color: {color};"
 					on:click={() => (selectedColor = color)}
-					role="button"
-					tabindex="0"
-					on:keypress|self={(e) => e.key === 'Enter' && (selectedColor = color)}
-				></div>
+					aria-label="Select color {color}"
+				></button>
 			{/each}
 		</div>
 		<button on:click={handleAddCategory}>Add</button>
@@ -55,7 +61,7 @@
 	<ul id="categoryList">
 		{#each Object.entries($categories) as [name, color] (name)}
 			<li transition:slide>
-				<span style="color: {color};">{name}</span>
+				<span class="category-name" style="color: {color};">{name}</span>
 				<button class="delete-btn" on:click={() => handleDeleteCategory(name)}>Delete</button>
 			</li>
 		{/each}
@@ -71,6 +77,17 @@
 		transition: var(--transition);
 		height: fit-content;
 		animation: fadeIn 0.5s ease-out;
+	}
+
+	@keyframes fadeIn {
+		from {
+			opacity: 0;
+			transform: translateY(10px);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
 	}
 
 	h2 {
@@ -103,7 +120,7 @@
 
 	input[type='text'] {
 		flex: 1;
-		min-width: 0;
+		min-width: 200px;
 	}
 
 	.delete-btn {
@@ -127,7 +144,7 @@
 		gap: 0.5rem;
 		margin: 0.75rem 0;
 		flex-wrap: wrap;
-		max-width: 240px;
+		width: 100%;
 	}
 
 	.color-option {
@@ -137,15 +154,24 @@
 		cursor: pointer;
 		transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 		border: 2px solid transparent;
+		padding: 0;
+		box-shadow: none;
 	}
 
 	.color-option:hover {
 		transform: scale(1.15);
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 	}
 
 	.color-option.selected {
 		border: 3px solid var(--text-primary);
 		transform: scale(1.15);
+	}
+
+	#categoryList {
+		list-style: none;
+		padding: 0;
+		margin: 0;
 	}
 
 	#categoryList li {
@@ -158,16 +184,16 @@
 		background: var(--surface-hover);
 		border: 1px solid var(--border);
 		transition: all 0.3s ease;
-		animation: slideIn 0.3s ease-out forwards;
 	}
 
 	#categoryList li:hover {
 		transform: translateY(-3px);
-		box-shadow: var(--shadow-md);
+		box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 		border-color: var(--primary-light);
 	}
 
-	#categoryList li span {
+	.category-name {
 		font-weight: 500;
+		font-size: 1rem;
 	}
 </style>
