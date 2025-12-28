@@ -1,9 +1,10 @@
 <script>
-	import { theme, font } from '$lib/stores.js';
+	import { theme, font, user } from '$lib/stores.js';
 	import Header from '$lib/components/Header.svelte';
 	import Categories from '$lib/components/Categories.svelte';
 	import Tasks from '$lib/components/Tasks.svelte';
 	import Settings from '$lib/components/Settings.svelte';
+	import Auth from '$lib/components/Auth.svelte';
 	import Footer from '$lib/components/Footer.svelte';
 	import { onMount } from 'svelte';
 
@@ -26,14 +27,19 @@
 
 <Header />
 
-<main class="container">
-	<Categories />
-	<Tasks />
-</main>
+{#if !$user}
+	<Auth />
+{:else}
+	<Auth />
+	<main class="container">
+		<Categories />
+		<Tasks />
+	</main>
 
-<Settings bind:show={showSettings} />
+	<Settings bind:show={showSettings} />
 
-<button class="settings-button" on:click={() => (showSettings = true)}>⚙</button>
+	<button class="settings-button" on:click={() => (showSettings = true)}>⚙</button>
+{/if}
 
 <Footer />
 
