@@ -10,3 +10,5 @@ An intuitive and customizable task list application with clean UI.
 - Multiple font options (Inter, Roboto, Arial)
 - All data persists in local storage
 - Responsive design for any screen size
+
+![Studently Demo](/assets/studently.png "Studently Demo")
