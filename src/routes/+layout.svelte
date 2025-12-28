@@ -1,11 +1,9 @@
 <script>
-  // We no longer need to import app.css
 </script>
 
 <slot />
 
 <style>
-	/* All global styles and CSS variables now live here */
 	:root {
 		--primary: #2563eb;
 		--primary-hover: #1d4ed8;

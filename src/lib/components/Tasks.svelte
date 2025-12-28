@@ -1,5 +1,4 @@
 <script>
-    // Script content remains the same
 	import { categories, tasks } from '../stores.js';
 	import { slide } from 'svelte/transition';
 

@@ -4,18 +4,14 @@ import { auth, db } from './firebase';
 import { doc, setDoc, getDoc, onSnapshot } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
 
-// User store
 export const user = writable(null);
 
-// Initialize auth state listener
 if (browser) {
 	onAuthStateChanged(auth, (firebaseUser) => {
 		user.set(firebaseUser);
 		if (firebaseUser) {
-			// Load user data from Firestore when logged in
 			loadUserData(firebaseUser.uid);
 		} else {
-			// Reset to defaults when logged out
 			categories.set({
 				'Work': '#3b82f6',
 				'Study': '#10b981',
@@ -26,7 +22,6 @@ if (browser) {
 	});
 }
 
-// Theme and font still use localStorage
 const createLocalStore = (key, startValue) => {
 	let initialValue = startValue;
 	
@@ -56,7 +51,6 @@ const createLocalStore = (key, startValue) => {
 	return store;
 };
 
-// Categories and tasks will sync with Firestore
 export const categories = writable({
 	'Work': '#3b82f6',
 	'Study': '#10b981',
@@ -68,7 +62,6 @@ export const tasks = writable([]);
 export const theme = createLocalStore('theme', 'light');
 export const font = createLocalStore('font', 'Inter');
 
-// Save data to Firestore
 async function saveUserData(userId, data) {
 	if (!userId) return;
 	try {
@@ -78,7 +71,6 @@ async function saveUserData(userId, data) {
 	}
 }
 
-// Load data from Firestore
 async function loadUserData(userId) {
 	if (!userId) return;
 	try {
@@ -91,7 +83,6 @@ async function loadUserData(userId) {
 			if (data.tasks) tasks.set(data.tasks);
 		}
 
-		// Set up real-time listener
 		onSnapshot(docRef, (doc) => {
 			if (doc.exists()) {
 				const data = doc.data();
@@ -104,7 +95,6 @@ async function loadUserData(userId) {
 	}
 }
 
-// Subscribe to changes and save to Firestore
 if (browser) {
 	let saveTimeout;
 	categories.subscribe((value) => {
