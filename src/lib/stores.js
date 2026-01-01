@@ -18,6 +18,7 @@ if (browser) {
 				'Personal': '#ef4444'
 			});
 			tasks.set([]);
+			deadlines.set([]);
 		}
 	});
 }
@@ -59,6 +60,8 @@ export const categories = writable({
 
 export const tasks = writable([]);
 
+export const deadlines = writable([]);
+
 export const theme = createLocalStore('theme', 'light');
 export const font = createLocalStore('font', 'Inter');
 
@@ -81,6 +84,7 @@ async function loadUserData(userId) {
 			const data = docSnap.data();
 			if (data.categories) categories.set(data.categories);
 			if (data.tasks) tasks.set(data.tasks);
+			if (data.deadlines) deadlines.set(data.deadlines);
 		}
 
 		onSnapshot(docRef, (doc) => {
@@ -88,6 +92,7 @@ async function loadUserData(userId) {
 				const data = doc.data();
 				if (data.categories) categories.set(data.categories);
 				if (data.tasks) tasks.set(data.tasks);
+				if (data.deadlines) deadlines.set(data.deadlines);
 			}
 		});
 	} catch (error) {
@@ -113,6 +118,16 @@ if (browser) {
 			clearTimeout(saveTimeout);
 			saveTimeout = setTimeout(() => {
 				saveUserData(currentUser.uid, { tasks: value });
+			}, 500);
+		}
+	});
+
+	deadlines.subscribe((value) => {
+		const currentUser = auth.currentUser;
+		if (currentUser) {
+			clearTimeout(saveTimeout);
+			saveTimeout = setTimeout(() => {
+				saveUserData(currentUser.uid, { deadlines: value });
 			}, 500);
 		}
 	});

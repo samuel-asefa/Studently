@@ -6,6 +6,7 @@
 	import Settings from '$lib/components/Settings.svelte';
 	import Auth from '$lib/components/Auth.svelte';
 	import Footer from '$lib/components/Footer.svelte';
+	import DeadlineOptimizer from '$lib/components/DeadlineOptimizer.svelte';
 	import { onMount } from 'svelte';
 
 	let showSettings = false;
@@ -32,8 +33,13 @@
 {:else}
 	<Auth />
 	<main class="container">
-		<Categories />
-		<Tasks />
+		<div class="left-column">
+			<Categories />
+			<Tasks />
+		</div>
+		<div class="right-column">
+			<DeadlineOptimizer />
+		</div>
 	</main>
 
 	<Settings bind:show={showSettings} />
@@ -49,8 +55,19 @@
 		margin: 0 auto 4rem;
 		padding: 0 2rem;
 		display: grid;
-		grid-template-columns: 1.4fr 1.8fr;
+		grid-template-columns: 1fr 1.2fr;
 		gap: 2.5rem;
+	}
+
+	.left-column {
+		display: flex;
+		flex-direction: column;
+		gap: 2.5rem;
+	}
+
+	.right-column {
+		display: flex;
+		flex-direction: column;
 	}
 
 	.settings-button {
@@ -77,7 +94,7 @@
 		box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
 	}
 
-	@media (max-width: 768px) {
+	@media (max-width: 1024px) {
 		.container {
 			grid-template-columns: 1fr;
 		}
