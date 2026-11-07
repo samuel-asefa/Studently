@@ -2,21 +2,18 @@
 	import { flip } from 'svelte/animate';
 	import { slide, fade } from 'svelte/transition';
 	import Ring from '../ui/Ring.svelte';
-	import Logo from '../ui/Logo.svelte';
 	import Check from '../ui/Check.svelte';
 	import TypeTile from '../ui/TypeTile.svelte';
 	import WeekChart from '../ui/WeekChart.svelte';
-	import { stats, plan, displayName, deadlines, tasks, categories, replaceAll } from '$lib/stores.js';
-	import { go, focusTarget, confirm, toast } from '$lib/ui.js';
+	import { stats, plan, displayName, deadlines, tasks, categories, replaceAll, achievements } from '$lib/stores.js';
+	import { go, focusTarget, confirm, toast, templatesOpen } from '$lib/ui.js';
 	import { toggleTask, addTask } from '$lib/actions.js';
-	import { greeting, formatHours, relativeDay, shortDate, countdown, daysUntil } from '$lib/utils/date.js';
+	import { greeting, formatHours, relativeDay, shortDate, countdown, daysUntil, parseISO, weekdayShort } from '$lib/utils/date.js';
 	import { seriesColor } from '$lib/constants.js';
 	import { spotlight } from '$lib/utils/use.js';
 	import { demoData } from '$lib/demo.js';
-	import {
-		Target, ListChecks, Flame, Hourglass, Play, ArrowRight, CalendarClock, Plus, TriangleAlert,
-		Sparkles, ChartColumn, CalendarDays, Timer, PartyPopper, Inbox
-	} from '$lib/icons.js';
+	import { TEMPLATES } from '$lib/content/templates.js';
+	import { ArrowRight } from '$lib/icons.js';
 
 	const dateLine = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
 
@@ -29,6 +26,15 @@
 	const openTasks = $derived($tasks.filter((t) => !t.done).slice(0, 6));
 	const upcoming = $derived($stats.upcoming.slice(0, 5));
 	const problems = $derived($plan.risks.length + $plan.overdue.length);
+	const pct = (a, b) => (b ? Math.round(Math.min(1, a / b) * 100) : 0);
+
+	const unlocked = $derived($achievements.filter((a) => a.unlocked).length);
+	const nextUp = $derived(
+		$achievements
+			.filter((a) => !a.unlocked)
+			.sort((a, b) => b.progress - a.progress)
+			.slice(0, 3)
+	);
 
 	let now = $state(Date.now());
 	$effect(() => {
@@ -47,7 +53,8 @@
 
 	const summary = $derived.by(() => {
 		if (isEmpty) return 'Let’s set up your semester. Add a deadline and Studently plans the rest.';
-		if (focused > 0 && leftToday === 0 && $deadlines.some((d) => !d.completed)) return 'You’ve hit today’s plan. Anything more is a bonus.';
+		if (focused > 0 && leftToday === 0 && $deadlines.some((d) => !d.completed))
+			return 'You’ve hit today’s plan. Anything more is a bonus.';
 		const parts = [];
 		if (leftToday > 0) parts.push(`${formatHours(leftToday)} of study left today`);
 		if ($stats.activeTasks) parts.push(`${$stats.activeTasks} open task${$stats.activeTasks === 1 ? '' : 's'}`);
@@ -77,6 +84,11 @@
 		go('focus');
 	}
 
+	function openTemplates() {
+		go('planner');
+		templatesOpen.set(true);
+	}
+
 	async function loadDemo() {
 		if (!isEmpty) {
 			const ok = await confirm({
@@ -97,57 +109,59 @@
 		<span class="eyebrow">{dateLine}</span>
 		<h1 class="display">
 			{greeting()}{#if $displayName},<br class="br" />
-				<em class="grad-text">{$displayName}.</em>{:else}.{/if}
+				<em>{$displayName}.</em>{:else}.{/if}
 		</h1>
 		<p class="page-sub">{summary}</p>
 	</header>
 
 	{#if isEmpty}
 		<section class="welcome card spot" use:spotlight>
-			<div class="w-copy">
-				<span class="chip accent"><Sparkles size={12} /> Getting started</span>
-				<h2 class="display">Three steps to a <em>calmer</em> semester.</h2>
-				<ol class="steps">
-					<li><span class="n mono">1</span><div><strong>Add your deadlines</strong><span>Exams, essays, projects, with a rough hour estimate.</span></div></li>
-					<li><span class="n mono">2</span><div><strong>Get a daily plan</strong><span>Studently spreads the work across the days you have.</span></div></li>
-					<li><span class="n mono">3</span><div><strong>Focus and track</strong><span>Run focus sessions. Progress logs itself.</span></div></li>
-				</ol>
-				<div class="w-cta">
-					<button class="btn btn-primary" onclick={() => go('planner')}>
-						<CalendarClock size={17} /> Add your first deadline
-					</button>
-					<button class="btn btn-soft" onclick={loadDemo}>
-						<Sparkles size={16} /> Load a sample semester
-					</button>
-				</div>
-			</div>
-			<div class="w-art" aria-hidden="true">
-				<span class="orbit o1"><i></i></span>
-				<span class="orbit o2"><i></i></span>
-				<Logo word={false} size={84} />
+			<span class="eyebrow">Getting started</span>
+			<h2 class="display">Three steps to a <em>calmer</em> semester.</h2>
+			<ol class="steps">
+				<li>
+					<span class="index">01</span>
+					<strong>Add your deadlines</strong>
+					<span>Exams, essays, projects, with a rough hour estimate. Or start from one of {TEMPLATES.length} templates.</span>
+				</li>
+				<li>
+					<span class="index">02</span>
+					<strong>Get a daily plan</strong>
+					<span>Studently spreads the work across the days you have, in 15-minute blocks.</span>
+				</li>
+				<li>
+					<span class="index">03</span>
+					<strong>Focus and track</strong>
+					<span>Run focus sessions. Progress logs itself, and your plan adjusts.</span>
+				</li>
+			</ol>
+			<div class="w-cta">
+				<button class="btn btn-primary" onclick={() => go('planner')}>Add your first deadline</button>
+				<button class="btn btn-soft" onclick={openTemplates}>Browse {TEMPLATES.length} templates</button>
+				<button class="btn btn-ghost" onclick={loadDemo}>Load a sample semester</button>
 			</div>
 		</section>
 	{/if}
 
 	{#if problems > 0}
 		<button class="alert card" onclick={() => go('planner')} transition:slide>
-			<span class="a-ico"><TriangleAlert size={18} /></span>
 			<span class="a-text">
 				{#if $plan.overdue.length}
 					<strong>{$plan.overdue.length} overdue</strong> deadline{$plan.overdue.length === 1 ? '' : 's'}
 					{#if $plan.risks.length}and <strong>{$plan.risks.length} at risk</strong>{/if}.
 				{:else}
-					<strong>{$plan.risks[0].name}</strong> needs {formatHours($plan.risks[0].shortfall)} more than your budget allows{$plan.risks.length > 1 ? ` (+${$plan.risks.length - 1} more)` : ''}.
+					<strong>{$plan.risks[0].name}</strong> needs {formatHours($plan.risks[0].shortfall)} more than your budget
+					allows{$plan.risks.length > 1 ? ` (+${$plan.risks.length - 1} more)` : ''}.
 				{/if}
 			</span>
-			<span class="a-go">Review plan <ArrowRight size={15} /></span>
+			<span class="a-go">Review plan <ArrowRight size={15} weight="bold" /></span>
 		</button>
 	{/if}
 
 	<section class="stats">
 		<article class="stat card spot" use:spotlight>
-			<Ring value={planned ? focused / planned : 0} size={60} stroke={6}>
-				<Target size={20} />
+			<Ring value={planned ? focused / planned : 0} size={64} stroke={6}>
+				<span class="ring-n num">{pct(focused, planned)}<small>%</small></span>
 			</Ring>
 			<div class="s-body">
 				<span class="eyebrow">Focus today</span>
@@ -157,8 +171,8 @@
 		</article>
 
 		<article class="stat card spot" use:spotlight>
-			<Ring value={$stats.totalTasks ? $stats.doneTasks / $stats.totalTasks : 0} size={60} stroke={6}>
-				<ListChecks size={20} />
+			<Ring value={$stats.totalTasks ? $stats.doneTasks / $stats.totalTasks : 0} size={64} stroke={6}>
+				<span class="ring-n num">{pct($stats.doneTasks, $stats.totalTasks)}<small>%</small></span>
 			</Ring>
 			<div class="s-body">
 				<span class="eyebrow">Tasks</span>
@@ -167,27 +181,40 @@
 			</div>
 		</article>
 
-		<article class="stat card spot streak" class:lit={$stats.streak > 0} use:spotlight>
-			<span class="flame"><Flame size={26} /></span>
+		<article class="stat card spot" use:spotlight>
 			<div class="s-body">
 				<span class="eyebrow">Streak</span>
 				<span class="s-big num">{$stats.streak} <small>day{$stats.streak === 1 ? '' : 's'}</small></span>
-				<span class="s-sub">{$stats.streak ? 'Keep it alive today' : 'Finish anything to start one'}</span>
+				<div class="week-dots" aria-label="Active days this week">
+					{#each $stats.week as d}
+						<span class="wd" class:on={d.active} title={shortDate(d.date)}>
+							<i></i>
+							<em>{weekdayShort(d.date).slice(0, 1)}</em>
+						</span>
+					{/each}
+				</div>
 			</div>
 		</article>
 
 		<article class="stat card spot" use:spotlight>
-			<span class="hour"><Hourglass size={24} /></span>
-			<div class="s-body">
-				<span class="eyebrow">Next deadline</span>
-				{#if next}
+			{#if next}
+				{@const d = parseISO(next.dueDate)}
+				<div class="cal" aria-hidden="true">
+					<span class="cal-m">{d.toLocaleDateString('en-US', { month: 'short' })}</span>
+					<span class="cal-d num">{d.getDate()}</span>
+				</div>
+				<div class="s-body">
+					<span class="eyebrow">Next deadline</span>
 					<span class="s-big num">{countdown(next.dueDate, now)}</span>
 					<span class="s-sub ellipsis" title={next.name}>{next.name}</span>
-				{:else}
+				</div>
+			{:else}
+				<div class="s-body">
+					<span class="eyebrow">Next deadline</span>
 					<span class="s-big num">—</span>
 					<span class="s-sub">You’re all clear</span>
-				{/if}
-			</div>
+				</div>
+			{/if}
 		</article>
 	</section>
 
@@ -195,8 +222,10 @@
 		<div class="col">
 			<article class="card card-pad">
 				<div class="card-head">
-					<h2 class="card-title"><span class="ico"><CalendarDays size={16} /></span> Today’s plan</h2>
-					<span class="mono faint">{focused > 0 ? `${formatHours(leftToday)} left` : formatHours(leftToday)}</span>
+					<h2 class="card-title">Today’s plan</h2>
+					<span class="card-meta">
+						{todayPlan?.items.length ?? 0} block{todayPlan?.items.length === 1 ? '' : 's'} · {formatHours(leftToday)}{focused > 0 ? ' left' : ''}
+					</span>
 				</div>
 				{#if todayPlan?.items.length}
 					<ul class="plan">
@@ -208,33 +237,32 @@
 									<div class="p-name">{item.name}</div>
 									<div class="p-meta">
 										<span>{relativeDay(item.dueDate)}</span>
-										{#if dl}<span>· {formatHours(dl.hoursSpent)} / {formatHours(dl.estimatedHours)} done</span>{/if}
+										{#if dl}<span class="mono">· {formatHours(dl.hoursSpent)} / {formatHours(dl.estimatedHours)}</span>{/if}
 									</div>
 									{#if dl}
-										<div class="bar thin"><span style:width="{Math.min(100, (dl.hoursSpent / dl.estimatedHours) * 100)}%" style:background={seriesColor(item.id)}></span></div>
+										<div class="bar thin">
+											<span style:width="{Math.min(100, (dl.hoursSpent / dl.estimatedHours) * 100)}%" style:background={seriesColor(item.id)}></span>
+										</div>
 									{/if}
 								</div>
 								<span class="p-hours num">{formatHours(item.hours)}</span>
-								<button class="btn btn-accent-soft btn-sm" onclick={() => startFocus(item.id)}>
-									<Play size={13} /> Focus
-								</button>
+								<button class="btn btn-accent-soft btn-sm" onclick={() => startFocus(item.id)}>Start</button>
 							</li>
 						{/each}
 					</ul>
 				{:else}
 					<div class="empty">
-						<span class="empty-ico">{#if $deadlines.length}<PartyPopper size={22} />{:else}<CalendarClock size={22} />{/if}</span>
 						<h3>{$deadlines.length ? 'Nothing due from today' : 'No deadlines yet'}</h3>
 						<p>{$deadlines.length ? 'Your plan is clear. Enjoy it, or get ahead.' : 'Add one in the Planner and your day fills itself in.'}</p>
-						<button class="btn btn-soft btn-sm" onclick={() => go('planner')}>Open planner <ArrowRight size={14} /></button>
+						<button class="btn btn-soft btn-sm" onclick={() => go('planner')}>Open planner</button>
 					</div>
 				{/if}
 			</article>
 
 			<article class="card card-pad">
 				<div class="card-head">
-					<h2 class="card-title"><span class="ico"><ChartColumn size={16} /></span> Focus this week</h2>
-					<span class="mono faint">{formatHours($stats.weekMinutes / 60)} total</span>
+					<h2 class="card-title">Focus this week</h2>
+					<span class="card-meta">{formatHours($stats.weekMinutes / 60)} total</span>
 				</div>
 				<WeekChart data={$stats.week} />
 			</article>
@@ -243,11 +271,10 @@
 		<div class="col">
 			<article class="card card-pad">
 				<div class="card-head">
-					<h2 class="card-title"><span class="ico"><ListChecks size={16} /></span> Tasks</h2>
-					<button class="btn btn-ghost btn-sm" onclick={() => go('tasks')}>All <ArrowRight size={14} /></button>
+					<h2 class="card-title">Tasks</h2>
+					<button class="btn btn-ghost btn-sm" onclick={() => go('tasks')}>All {$stats.totalTasks}</button>
 				</div>
 				<form class="quick" onsubmit={addQuick}>
-					<Plus size={16} />
 					<input class="input" bind:value={quick} placeholder="Add a task… (#category)" aria-label="Add a task" />
 				</form>
 				{#if openTasks.length}
@@ -263,17 +290,14 @@
 						{/each}
 					</ul>
 				{:else}
-					<div class="empty small">
-						<span class="empty-ico"><Inbox size={20} /></span>
-						<p>{$tasks.length ? 'Inbox zero. Beautiful.' : 'Quick to-dos live here.'}</p>
-					</div>
+					<p class="quiet">{$tasks.length ? 'Inbox zero. Beautiful.' : 'Quick to-dos live here.'}</p>
 				{/if}
 			</article>
 
 			<article class="card card-pad">
 				<div class="card-head">
-					<h2 class="card-title"><span class="ico"><Timer size={16} /></span> Coming up</h2>
-					<button class="btn btn-ghost btn-sm" onclick={() => go('planner')}>Planner <ArrowRight size={14} /></button>
+					<h2 class="card-title">Coming up</h2>
+					<button class="btn btn-ghost btn-sm" onclick={() => go('planner')}>Planner</button>
 				</div>
 				{#if upcoming.length}
 					<ol class="timeline">
@@ -287,17 +311,36 @@
 								</div>
 								<div class="t-body">
 									<span class="t-title">{d.name}</span>
-									<span class="faint">{formatHours(Math.max(0, d.estimatedHours - d.hoursSpent))} left</span>
+									<span class="faint mono">{formatHours(Math.max(0, d.estimatedHours - d.hoursSpent))} left</span>
 								</div>
 							</li>
 						{/each}
 					</ol>
 				{:else}
-					<div class="empty small">
-						<span class="empty-ico"><CalendarClock size={20} /></span>
-						<p>No upcoming deadlines.</p>
-					</div>
+					<p class="quiet">No upcoming deadlines.</p>
 				{/if}
+			</article>
+
+			<article class="card card-pad">
+				<div class="card-head">
+					<h2 class="card-title">Achievements</h2>
+					<button class="btn btn-ghost btn-sm" onclick={() => go('insights')}>
+						<span class="num">{unlocked}/{$achievements.length}</span>
+					</button>
+				</div>
+				<div class="bar"><span style:width="{($achievements.length ? unlocked / $achievements.length : 0) * 100}%"></span></div>
+				<ul class="next-up">
+					{#each nextUp as a (a.id)}
+						<li>
+							<span class="tier {a.tier}"></span>
+							<div class="nu-body">
+								<span class="nu-name">{a.name}</span>
+								<span class="faint">{a.desc}</span>
+							</div>
+							<span class="num nu-val">{Math.min(a.value, a.target)}<span class="faint">/{a.target}</span></span>
+						</li>
+					{/each}
+				</ul>
 			</article>
 		</div>
 	</section>
@@ -310,6 +353,9 @@
 		line-height: 0.98;
 		letter-spacing: -0.03em;
 	}
+	.hello h1 em {
+		color: var(--accent);
+	}
 	.br {
 		display: none;
 	}
@@ -320,89 +366,42 @@
 
 	/* Welcome */
 	.welcome {
-		display: grid;
-		grid-template-columns: 1fr auto;
-		gap: 32px;
-		align-items: center;
 		padding: 32px;
 		border-radius: var(--radius-xl);
-		overflow: hidden;
 	}
 	.welcome h2 {
 		font-size: clamp(30px, 3.6vw, 42px);
-		margin: 14px 0 20px;
+		margin: 12px 0 26px;
 	}
 	.welcome h2 em {
 		color: var(--accent);
 	}
 	.steps {
 		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-		gap: 16px;
+		grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+		gap: 24px;
 	}
 	.steps li {
 		display: flex;
-		gap: 12px;
-	}
-	.steps .n {
-		display: grid;
-		place-items: center;
-		width: 26px;
-		height: 26px;
-		border-radius: 8px;
-		font-size: 12px;
-		font-weight: 600;
-		color: var(--accent-ink);
-		background: var(--accent-soft);
-		flex-shrink: 0;
+		flex-direction: column;
+		gap: 4px;
+		padding-top: 14px;
+		border-top: 1px solid var(--border-2);
 	}
 	.steps strong {
-		display: block;
-		font-size: 14px;
+		margin-top: 6px;
+		font-size: 15px;
 		font-weight: 600;
 	}
-	.steps span:not(.n) {
-		font-size: 13px;
+	.steps span:not(.index) {
+		font-size: 13.5px;
 		color: var(--text-2);
 	}
 	.w-cta {
 		display: flex;
 		flex-wrap: wrap;
 		gap: 10px;
-		margin-top: 26px;
-	}
-	.w-art {
-		position: relative;
-		display: grid;
-		place-items: center;
-		width: 200px;
-		height: 200px;
-	}
-	.orbit {
-		position: absolute;
-		inset: 0;
-		border-radius: 50%;
-		border: 1px dashed var(--border-2);
-		animation: spin 18s linear infinite;
-	}
-	.orbit.o2 {
-		inset: 34px;
-		animation-duration: 11s;
-		animation-direction: reverse;
-	}
-	.orbit i {
-		position: absolute;
-		top: -5px;
-		left: calc(50% - 5px);
-		width: 10px;
-		height: 10px;
-		border-radius: 50%;
-		background: var(--accent);
-		box-shadow: 0 0 14px var(--accent);
-	}
-	.o2 i {
-		background: var(--accent-2);
-		box-shadow: 0 0 14px var(--accent-2);
+		margin-top: 28px;
 	}
 
 	/* Alert */
@@ -410,21 +409,21 @@
 		display: flex;
 		align-items: center;
 		gap: 14px;
-		padding: 14px 18px;
+		padding: 14px 18px 14px 20px;
 		text-align: left;
+		font-size: 14px;
+		overflow: hidden;
 		border-color: oklch(0.8 0.15 75 / 0.3);
 		background: linear-gradient(90deg, oklch(0.8 0.15 75 / 0.1), var(--surface));
-		font-size: 14px;
 	}
-	.a-ico {
-		display: grid;
-		place-items: center;
-		width: 34px;
-		height: 34px;
-		border-radius: 11px;
-		color: var(--warn);
-		background: oklch(0.8 0.15 75 / 0.15);
-		flex-shrink: 0;
+	.alert::before {
+		content: '';
+		position: absolute;
+		left: 0;
+		top: 0;
+		bottom: 0;
+		width: 3px;
+		background: var(--warn);
 	}
 	.a-text {
 		flex: 1;
@@ -460,8 +459,15 @@
 	.stat:hover {
 		transform: translateY(-2px);
 	}
-	.stat :global(.ring svg + .center) {
-		color: var(--accent);
+	.ring-n {
+		font-size: 15px;
+		font-weight: 600;
+		letter-spacing: -0.03em;
+	}
+	.ring-n small {
+		font-size: 10px;
+		color: var(--text-3);
+		margin-left: 1px;
 	}
 	.s-body {
 		display: flex;
@@ -489,33 +495,61 @@
 		text-overflow: ellipsis;
 		white-space: nowrap;
 	}
-	.flame,
-	.hour {
-		display: grid;
-		place-items: center;
-		width: 60px;
-		height: 60px;
-		border-radius: 50%;
-		flex-shrink: 0;
-		background: var(--surface-2);
+	.week-dots {
+		display: flex;
+		gap: 6px;
+		margin-top: 6px;
+	}
+	.wd {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 4px;
+	}
+	.wd i {
+		width: 14px;
+		height: 14px;
+		border-radius: 4px;
+		background: var(--surface-3);
+	}
+	.wd.on i {
+		background: var(--accent);
+		box-shadow: 0 0 10px -2px var(--accent-glow);
+	}
+	.wd em {
+		font-style: normal;
+		font-family: var(--font-mono);
+		font-size: 9.5px;
 		color: var(--text-3);
 	}
-	.hour {
-		color: var(--accent);
-		background: var(--accent-soft);
+	.cal {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		width: 56px;
+		flex-shrink: 0;
+		border-radius: 12px;
+		overflow: hidden;
+		border: 1px solid var(--border-2);
+		background: var(--surface-2);
 	}
-	.streak.lit .flame {
-		color: oklch(0.8 0.17 60);
-		background: radial-gradient(circle at 50% 70%, oklch(0.75 0.19 45 / 0.35), oklch(0.75 0.19 45 / 0.08));
-		box-shadow: 0 0 30px -6px oklch(0.75 0.19 45 / 0.6);
+	.cal-m {
+		width: 100%;
+		padding: 3px 0;
+		text-align: center;
+		font-family: var(--font-mono);
+		font-size: 10px;
+		font-weight: 600;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		color: #fff;
+		background: var(--btn-a);
 	}
-	.streak.lit .flame :global(svg) {
-		animation: flicker 2.4s ease-in-out infinite;
-		transform-origin: bottom;
-	}
-	@keyframes flicker {
-		0%, 100% { transform: scale(1) rotate(-2deg); }
-		50% { transform: scale(1.08) rotate(2deg); }
+	.cal-d {
+		padding: 4px 0 6px;
+		font-size: 22px;
+		font-weight: 600;
+		line-height: 1.1;
 	}
 
 	/* Grid */
@@ -531,7 +565,6 @@
 		gap: 16px;
 		min-width: 0;
 	}
-
 	.plan {
 		display: flex;
 		flex-direction: column;
@@ -578,21 +611,8 @@
 		font-weight: 600;
 		color: var(--text-2);
 	}
-
 	.quick {
-		position: relative;
-		display: flex;
-		align-items: center;
 		margin-bottom: 8px;
-	}
-	.quick :global(svg) {
-		position: absolute;
-		left: 13px;
-		color: var(--text-3);
-		pointer-events: none;
-	}
-	.quick .input {
-		padding-left: 38px;
 	}
 	.tasks li {
 		display: flex;
@@ -612,15 +632,12 @@
 		text-overflow: ellipsis;
 		white-space: nowrap;
 	}
-	.empty.small {
-		padding: 22px 10px 10px;
+	.quiet {
+		padding: 18px 0 6px;
+		font-size: 13.5px;
+		color: var(--text-3);
+		text-align: center;
 	}
-	.empty.small .empty-ico {
-		width: 42px;
-		height: 42px;
-		border-radius: 13px;
-	}
-
 	.timeline {
 		position: relative;
 		display: flex;
@@ -683,18 +700,57 @@
 		text-overflow: ellipsis;
 		white-space: nowrap;
 	}
+	.next-up {
+		display: flex;
+		flex-direction: column;
+		margin-top: 12px;
+	}
+	.next-up li {
+		display: flex;
+		align-items: center;
+		gap: 12px;
+		padding: 10px 0;
+		border-bottom: 1px solid var(--border);
+	}
+	.next-up li:last-child {
+		border-bottom: 0;
+	}
+	.tier {
+		width: 10px;
+		height: 10px;
+		border-radius: 3px;
+		flex-shrink: 0;
+		transform: rotate(45deg);
+	}
+	.tier.bronze {
+		background: oklch(0.68 0.11 55);
+	}
+	.tier.silver {
+		background: oklch(0.8 0.01 250);
+	}
+	.tier.gold {
+		background: oklch(0.82 0.15 85);
+	}
+	.nu-body {
+		flex: 1;
+		min-width: 0;
+		display: flex;
+		flex-direction: column;
+		font-size: 12px;
+		line-height: 1.35;
+	}
+	.nu-name {
+		font-size: 13.5px;
+		font-weight: 550;
+	}
+	.nu-val {
+		font-size: 13px;
+		font-weight: 600;
+	}
 
 	@media (max-width: 1200px) {
 		.stats {
 			grid-template-columns: repeat(2, 1fr);
-		}
-	}
-	@media (max-width: 1240px) {
-		.welcome {
-			grid-template-columns: 1fr;
-		}
-		.w-art {
-			display: none;
 		}
 	}
 	@media (max-width: 1180px) {
@@ -726,6 +782,13 @@
 		}
 		.s-big {
 			font-size: 21px;
+		}
+		.week-dots {
+			gap: 4px;
+		}
+		.wd i {
+			width: 12px;
+			height: 12px;
 		}
 		.alert {
 			flex-wrap: wrap;

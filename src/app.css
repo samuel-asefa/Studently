@@ -11,7 +11,8 @@
 }
 
 :root {
-	--accent-h: 285;
+	--accent-h: 258;
+	--accent-h2: 232;
 	--font-sans: 'Geist', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
 	--font-display: 'Instrument Serif', ui-serif, Georgia, serif;
 	--font-mono: 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
@@ -48,13 +49,13 @@
 	--text-3: oklch(0.57 0.02 var(--accent-h));
 
 	--accent: oklch(0.74 0.17 var(--accent-h));
-	--accent-2: oklch(0.74 0.16 calc(var(--accent-h) + 55));
-	--accent-3: oklch(0.72 0.14 calc(var(--accent-h) - 60));
+	--accent-2: oklch(0.76 0.14 var(--accent-h2));
+	--accent-3: oklch(0.72 0.12 calc(var(--accent-h2) - 25));
 	--accent-soft: oklch(0.74 0.17 var(--accent-h) / 0.14);
 	--accent-glow: oklch(0.65 0.21 var(--accent-h) / 0.45);
 	--accent-ink: oklch(0.82 0.13 var(--accent-h));
 	--btn-a: oklch(0.6 0.21 var(--accent-h));
-	--btn-b: oklch(0.58 0.2 calc(var(--accent-h) + 40));
+	--btn-b: oklch(0.6 0.19 var(--accent-h2));
 
 	--shadow-sm: 0 1px 0 oklch(1 0 0 / 0.04) inset, 0 1px 2px oklch(0 0 0 / 0.3);
 	--shadow: 0 1px 0 oklch(1 0 0 / 0.05) inset, 0 24px 48px -24px oklch(0 0 0 / 0.7);
@@ -80,13 +81,13 @@
 	--text-3: oklch(0.6 0.022 var(--accent-h));
 
 	--accent: oklch(0.55 0.22 var(--accent-h));
-	--accent-2: oklch(0.6 0.2 calc(var(--accent-h) + 55));
-	--accent-3: oklch(0.6 0.16 calc(var(--accent-h) - 60));
+	--accent-2: oklch(0.6 0.18 var(--accent-h2));
+	--accent-3: oklch(0.6 0.15 calc(var(--accent-h2) - 25));
 	--accent-soft: oklch(0.55 0.22 var(--accent-h) / 0.1);
 	--accent-glow: oklch(0.55 0.22 var(--accent-h) / 0.35);
 	--accent-ink: oklch(0.48 0.2 var(--accent-h));
 	--btn-a: oklch(0.56 0.23 var(--accent-h));
-	--btn-b: oklch(0.55 0.22 calc(var(--accent-h) + 40));
+	--btn-b: oklch(0.56 0.2 var(--accent-h2));
 
 	--danger: oklch(0.58 0.22 25);
 	--warn: oklch(0.68 0.16 65);
@@ -136,6 +137,7 @@ svg {
 	display: block;
 	flex-shrink: 0;
 }
+
 
 button,
 input,
@@ -633,6 +635,48 @@ input[type='range'].range::-moz-range-thumb {
 }
 
 /* ---------- Small bits ---------- */
+
+.status-dot {
+	width: 7px;
+	height: 7px;
+	border-radius: 50%;
+	flex-shrink: 0;
+	background: var(--success);
+	box-shadow: 0 0 0 3px oklch(0.74 0.16 155 / 0.18);
+}
+.status-dot.local {
+	background: var(--text-3);
+	box-shadow: 0 0 0 3px var(--surface-3);
+}
+.status-dot.saving {
+	background: var(--warn);
+	box-shadow: 0 0 0 3px oklch(0.8 0.15 75 / 0.18);
+	animation: blink-dot 1s ease-in-out infinite;
+}
+.status-dot.error {
+	background: var(--danger);
+	box-shadow: 0 0 0 3px oklch(0.66 0.21 25 / 0.18);
+}
+@keyframes blink-dot {
+	50% {
+		opacity: 0.35;
+	}
+}
+
+.card-meta {
+	font-family: var(--font-mono);
+	font-size: 12px;
+	color: var(--text-3);
+	font-variant-numeric: tabular-nums;
+}
+
+/* Section label like "01 — Plan" */
+.index {
+	font-family: var(--font-mono);
+	font-size: 11px;
+	letter-spacing: 0.08em;
+	color: var(--accent-ink);
+}
 
 .chip {
 	display: inline-flex;

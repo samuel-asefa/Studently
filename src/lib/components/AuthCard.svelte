@@ -12,7 +12,7 @@
 	import { toast } from '$lib/ui.js';
 	import { slide } from 'svelte/transition';
 	import Logo from './ui/Logo.svelte';
-	import { Mail, Lock, Eye, EyeOff, User, ArrowRight, LoaderCircle, CircleAlert, Laptop } from '$lib/icons.js';
+	import { LoaderCircle } from '$lib/icons.js';
 
 	let { mode = $bindable('signin') } = $props();
 
@@ -127,16 +127,13 @@
 	<form onsubmit={submit}>
 		{#if isSignUp}
 			<label class="input-wrap" transition:slide={{ duration: 250 }}>
-				<User size={16} />
 				<input class="input" type="text" bind:value={name} placeholder="First name" autocomplete="given-name" disabled={loading} />
 			</label>
 		{/if}
 		<label class="input-wrap">
-			<Mail size={16} />
 			<input class="input" type="email" bind:value={email} placeholder="you@school.edu" autocomplete="email" required disabled={loading} />
 		</label>
 		<label class="input-wrap">
-			<Lock size={16} />
 			<input
 				class="input"
 				type={showPassword ? 'text' : 'password'}
@@ -153,7 +150,7 @@
 				onclick={() => (showPassword = !showPassword)}
 				aria-label={showPassword ? 'Hide password' : 'Show password'}
 			>
-				{#if showPassword}<EyeOff size={16} />{:else}<Eye size={16} />{/if}
+				{showPassword ? 'Hide' : 'Show'}
 			</button>
 		</label>
 
@@ -163,7 +160,6 @@
 
 		{#if error}
 			<div class="error" transition:slide={{ duration: 200 }}>
-				<CircleAlert size={16} />
 				<span>{error}</span>
 			</div>
 		{/if}
@@ -173,15 +169,13 @@
 				<LoaderCircle size={18} class="spin" />
 			{:else}
 				{isSignUp ? 'Create account' : 'Sign in'}
-				<ArrowRight size={17} />
 			{/if}
 		</button>
 	</form>
 
 	<button class="guest" onclick={startGuest}>
-		<Laptop size={16} />
 		<span><strong>Continue as guest</strong> · no account needed</span>
-		<ArrowRight size={15} />
+		<span class="arrow" aria-hidden="true">→</span>
 	</button>
 	<p class="fine">Guest data stays on this device. Create an account later and it moves over automatically.</p>
 </div>
@@ -244,28 +238,19 @@
 		position: relative;
 		display: block;
 	}
-	.input-wrap > :global(svg:first-child) {
-		position: absolute;
-		left: 14px;
-		top: 50%;
-		transform: translateY(-50%);
-		color: var(--text-3);
-		pointer-events: none;
-	}
 	.input-wrap .input {
 		height: 46px;
-		padding-left: 40px;
 	}
 	.peek {
 		position: absolute;
 		right: 6px;
 		top: 50%;
 		transform: translateY(-50%);
-		display: grid;
-		place-items: center;
-		width: 34px;
-		height: 34px;
+		height: 32px;
+		padding: 0 10px;
 		border-radius: 9px;
+		font-size: 12px;
+		font-weight: 600;
 		color: var(--text-3);
 	}
 	.peek:hover {
@@ -273,7 +258,7 @@
 		background: var(--surface-2);
 	}
 	.input-wrap:has(.peek) .input {
-		padding-right: 44px;
+		padding-right: 64px;
 	}
 	.forgot {
 		align-self: flex-end;
@@ -295,8 +280,8 @@
 		background: oklch(0.66 0.21 25 / 0.1);
 		border: 1px solid oklch(0.66 0.21 25 / 0.2);
 	}
-	.error :global(svg) {
-		margin-top: 2px;
+	.error {
+		border-left: 3px solid var(--danger);
 	}
 	form .btn-primary {
 		margin-top: 4px;
@@ -321,7 +306,7 @@
 		color: var(--text);
 		font-weight: 600;
 	}
-	.guest :global(svg:last-child) {
+	.arrow {
 		transition: transform 0.3s var(--ease-out);
 	}
 	.guest:hover {
@@ -329,7 +314,7 @@
 		color: var(--text);
 		background: var(--accent-soft);
 	}
-	.guest:hover :global(svg:last-child) {
+	.guest:hover .arrow {
 		transform: translateX(3px);
 	}
 	.fine {

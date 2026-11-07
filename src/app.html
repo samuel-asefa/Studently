@@ -38,10 +38,19 @@
 					if (t !== 'light' && t !== 'dark') {
 						t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
 					}
-					var hues = { iris: 285, ocean: 235, mint: 165, lime: 128, gold: 80, ember: 38, rose: 355 };
+					var hues = {
+						blue: [258, 232], iris: [285, 318], sky: [228, 200], ocean: [228, 200],
+						mint: [165, 190], lime: [165, 190], gold: [80, 55], ember: [40, 18], rose: [355, 15]
+					};
+					var hue = hues[s.accent] || hues.blue;
 					var root = document.documentElement;
 					root.dataset.theme = t;
-					root.style.setProperty('--accent-h', hues[s.accent] || 285);
+					root.style.setProperty('--accent-h', hue[0]);
+					root.style.setProperty('--accent-h2', hue[1]);
+					// Last accent-colored favicon, so the tab icon is right before the app loads.
+					var icon = localStorage.getItem('studently:favicon');
+					var link = document.querySelector('link[rel="icon"]');
+					if (icon && link) link.href = icon;
 				} catch (e) {
 					document.documentElement.dataset.theme = 'dark';
 				}
@@ -53,12 +62,12 @@
 				inset: 0;
 				display: grid;
 				place-items: center;
-				background: oklch(0.155 0.014 var(--accent-h, 285));
+				background: oklch(0.155 0.014 var(--accent-h, 258));
 				z-index: 9999;
 				transition: opacity 0.5s ease, visibility 0.5s;
 			}
 			[data-theme='light'] #splash {
-				background: oklch(0.975 0.006 var(--accent-h, 285));
+				background: oklch(0.975 0.006 var(--accent-h, 258));
 			}
 			#splash.hide {
 				opacity: 0;
@@ -68,11 +77,11 @@
 				width: 56px;
 				height: 56px;
 				animation: splash-pulse 1.6s ease-in-out infinite;
-				filter: drop-shadow(0 10px 30px oklch(0.65 0.2 var(--accent-h, 285) / 0.5));
+				filter: drop-shadow(0 10px 30px oklch(0.65 0.2 var(--accent-h, 258) / 0.5));
 			}
 			@keyframes splash-pulse {
-				0%, 100% { transform: scale(0.92) rotate(0deg); opacity: 0.8; }
-				50% { transform: scale(1.04) rotate(45deg); opacity: 1; }
+				0%, 100% { transform: scale(0.94); opacity: 0.75; }
+				50% { transform: scale(1.02); opacity: 1; }
 			}
 		</style>
 		%sveltekit.head%
@@ -82,14 +91,12 @@
 			<svg viewBox="0 0 48 48">
 				<defs>
 					<linearGradient id="sg" x1="0" y1="0" x2="1" y2="1">
-						<stop offset="0" stop-color="oklch(0.72 0.19 var(--accent-h, 285))" />
-						<stop offset="1" stop-color="oklch(0.7 0.18 calc(var(--accent-h, 285) + 55))" />
+						<stop offset="0" style="stop-color: oklch(0.6 0.2 var(--accent-h, 258))" />
+						<stop offset="1" style="stop-color: oklch(0.6 0.18 var(--accent-h2, 232))" />
 					</linearGradient>
 				</defs>
-				<path
-					fill="url(#sg)"
-					d="M24 4C25.8 15.5 32.5 22.2 44 24 32.5 25.8 25.8 32.5 24 44 22.2 32.5 15.5 25.8 4 24 15.5 22.2 22.2 15.5 24 4Z"
-				/>
+				<rect width="48" height="48" rx="12" fill="url(#sg)" />
+				<path d="M24 10 42.5 18.4 24 26.8 5.5 18.4Z" fill="#fff" stroke="#fff" stroke-width="2" stroke-linejoin="round" /><path d="M13.8 24.8 24 29.4 34.2 24.8V30.6C34.2 33.6 29.6 36 24 36S13.8 33.6 13.8 30.6Z" fill="#fff" fill-opacity=".74" /><path d="M39.6 20.4V30.2" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" /><circle cx="39.6" cy="31.6" r="2.3" fill="#fff" />
 			</svg>
 		</div>
 		<div style="display: contents">%sveltekit.body%</div>

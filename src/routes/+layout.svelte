@@ -1,8 +1,10 @@
 <script>
 	import '../app.css';
 	import { settings } from '$lib/stores.js';
-	import { ACCENTS, FONTS } from '$lib/constants.js';
+	import { FONTS, accentFor } from '$lib/constants.js';
+	import { applyFavicon } from '$lib/brand.js';
 	import { resolvedTheme } from '$lib/theme.js';
+	import IconContext from 'phosphor-svelte/lib/IconContext';
 	import Toasts from '$lib/components/Toasts.svelte';
 	import ConfirmDialog from '$lib/components/ConfirmDialog.svelte';
 
@@ -22,7 +24,10 @@
 		void systemDark;
 		const root = document.documentElement;
 		root.dataset.theme = resolvedTheme(s.theme);
-		root.style.setProperty('--accent-h', String(ACCENTS.find((a) => a.id === s.accent)?.h ?? 285));
+		const accent = accentFor(s.accent);
+		root.style.setProperty('--accent-h', String(accent.h));
+		root.style.setProperty('--accent-h2', String(accent.h2));
+		applyFavicon(accent.id);
 		if (s.reduceMotion) root.dataset.motion = 'reduce';
 		else delete root.dataset.motion;
 
@@ -38,6 +43,9 @@
 	});
 </script>
 
-{@render children()}
-<Toasts />
-<ConfirmDialog />
+<!-- Duotone icons everywhere unless a component asks for another weight. -->
+<IconContext values={{ weight: 'duotone' }}>
+	{@render children()}
+	<Toasts />
+	<ConfirmDialog />
+</IconContext>

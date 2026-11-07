@@ -7,7 +7,7 @@
 	import { confirm, toast, go } from '$lib/ui.js';
 	import { CATEGORY_COLORS } from '$lib/constants.js';
 	import { spotlight, autofocus } from '$lib/utils/use.js';
-	import { Plus, Pencil, Trash, Palette, Tag, Check, ArrowRight } from '$lib/icons.js';
+	import { Pencil, Trash, Palette, Check, Tag, Plus } from '$lib/icons.js';
 
 	let name = $state('');
 	let color = $state(CATEGORY_COLORS[0]);
@@ -72,12 +72,13 @@
 
 	<form class="create card card-pad" onsubmit={create}>
 		<div class="preview" style:--c={color}>
-			<Tag size={22} />
+			<Tag size={26} weight="fill" />
+			<span class="p-hex mono">{color}</span>
 		</div>
 		<div class="c-body">
 			<div class="c-row">
 				<input class="input" bind:value={name} placeholder="New category, e.g. Math, Soccer, Job" aria-label="Category name" maxlength="40" />
-				<button class="btn btn-primary" type="submit" disabled={!name.trim()}><Plus size={16} /> Create</button>
+				<button class="btn btn-primary" type="submit" disabled={!name.trim()}>Create</button>
 			</div>
 			<div class="palette" role="radiogroup" aria-label="Color">
 				{#each CATEGORY_COLORS as c}
@@ -91,11 +92,11 @@
 						aria-label="Color {c}"
 						onclick={() => (color = c)}
 					>
-						{#if c === color}<span in:scale={{ duration: 250, easing: backOut }}><Check size={13} /></span>{/if}
+						{#if c === color}<span in:scale={{ duration: 250, easing: backOut }}><Check size={13} weight="bold" /></span>{/if}
 					</button>
 				{/each}
 				<label class="sw custom" title="Custom color" style:--c={color}>
-					<Palette size={14} />
+					<Plus size={14} weight="bold" />
 					<input type="color" bind:value={color} aria-label="Custom color" />
 				</label>
 			</div>
@@ -167,13 +168,12 @@
 		</section>
 	{:else}
 		<div class="card empty">
-			<span class="empty-ico"><Tag size={22} /></span>
 			<h3>No categories</h3>
 			<p>Create one above. Tasks without a category land in your Inbox.</p>
 		</div>
 	{/if}
 
-	<button class="to-tasks btn btn-ghost" onclick={() => go('tasks')}>Go to tasks <ArrowRight size={15} /></button>
+	<button class="to-tasks btn btn-ghost" onclick={() => go('tasks')}>Go to tasks →</button>
 </div>
 
 <style>
@@ -183,16 +183,27 @@
 		align-items: flex-start;
 	}
 	.preview {
-		display: grid;
-		place-items: center;
-		width: 62px;
-		height: 62px;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		gap: 4px;
+		width: 72px;
+		height: 72px;
 		border-radius: 18px;
 		flex-shrink: 0;
 		color: #fff;
 		background: linear-gradient(135deg, var(--c), color-mix(in oklch, var(--c) 70%, black));
 		box-shadow: 0 12px 30px -10px var(--c);
 		transition: background 0.4s, box-shadow 0.4s;
+	}
+	.p-hex {
+		font-size: 9.5px;
+		opacity: 0.85;
+		text-transform: uppercase;
+	}
+	.custom :global(svg) {
+		filter: drop-shadow(0 1px 2px oklch(0 0 0 / 0.4));
 	}
 	.c-body {
 		flex: 1;

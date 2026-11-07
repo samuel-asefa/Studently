@@ -50,7 +50,7 @@
 		right: -26vmax;
 		background: radial-gradient(
 			closest-side,
-			oklch(0.64 0.19 calc(var(--accent-h) + 55) / 0.45),
+			oklch(0.64 0.17 var(--accent-h2) / 0.42),
 			transparent
 		);
 		animation: drift2 32s ease-in-out infinite alternate;
@@ -60,7 +60,7 @@
 		left: 18vmax;
 		background: radial-gradient(
 			closest-side,
-			oklch(0.62 0.16 calc(var(--accent-h) - 60) / 0.38),
+			oklch(0.62 0.14 calc(var(--accent-h2) - 30) / 0.34),
 			transparent
 		);
 		animation: drift3 38s ease-in-out infinite alternate;

@@ -2,6 +2,7 @@ import { get } from 'svelte/store';
 import { tasks, deadlines, categories, sessions, settings } from './stores.js';
 import { uid, clamp } from './utils/id.js';
 import { todayISO } from './utils/date.js';
+import { planSteps } from './content/templates.js';
 import { toast } from './ui.js';
 import { pickHue } from './constants.js';
 import { confetti } from './utils/confetti.js';
@@ -91,10 +92,41 @@ export function addDeadline(fields) {
 		completedAt: null,
 		createdAt: Date.now(),
 		notes: fields.notes ?? '',
-		hue: pickHue(get(deadlines))
+		hue: fields.hue ?? pickHue(get(deadlines)),
+		template: fields.template ?? null,
+		group: fields.group ?? null
 	};
 	deadlines.update((list) => [...list, d]);
 	return d;
+}
+
+/** Create one deadline per template step (see planSteps for the dating rules). */
+export function applyTemplate(template, { title, dueDate, factor = 1 }) {
+	const group = uid();
+	const hue = pickHue(get(deadlines));
+	const label = (title || template.name).trim();
+	const created = planSteps(template, dueDate, factor)
+		.map((step) =>
+			addDeadline({
+				name: `${label}: ${step.name}`,
+				type: step.type,
+				dueDate: step.dueDate,
+				estimatedHours: step.hours,
+				customWeight: step.weight,
+				template: template.id,
+				group,
+				hue
+			})
+		)
+		.filter(Boolean);
+	toast(`Planned “${label}” in ${created.length} steps`, {
+		tone: 'success',
+		action: {
+			label: 'Undo',
+			run: () => deadlines.update((list) => list.filter((x) => x.group !== group))
+		}
+	});
+	return created;
 }
 
 export function updateDeadline(id, patch) {

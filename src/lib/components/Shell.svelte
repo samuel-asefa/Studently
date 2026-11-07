@@ -5,19 +5,23 @@
 	import MobileNav from './MobileNav.svelte';
 	import CommandPalette from './CommandPalette.svelte';
 	import SettingsDrawer from './SettingsDrawer.svelte';
+	import TemplatePicker from './TemplatePicker.svelte';
+	import TechniqueLibrary from './TechniqueLibrary.svelte';
+	import Insights from './views/Insights.svelte';
 	import Dashboard from './views/Dashboard.svelte';
 	import Planner from './views/Planner.svelte';
 	import Tasks from './views/Tasks.svelte';
 	import Focus from './views/Focus.svelte';
 	import Categories from './views/Categories.svelte';
-	import { view, go, syncViewFromHash, paletteOpen, settingsOpen, openPalette } from '$lib/ui.js';
+	import { view, go, syncViewFromHash, paletteOpen, settingsOpen, openPalette, templatesOpen, libraryOpen, toast } from '$lib/ui.js';
+	import { achievements } from '$lib/stores.js';
 	import { timer, remaining, MODES, toggle as toggleTimer } from '$lib/focus.js';
 	import { NAV } from '$lib/constants.js';
 	import { formatClock } from '$lib/utils/date.js';
 	import { isTyping } from '$lib/utils/use.js';
 	import { toggleTheme } from '$lib/theme.js';
 
-	const VIEWS = { today: Dashboard, planner: Planner, tasks: Tasks, focus: Focus, categories: Categories };
+	const VIEWS = { today: Dashboard, planner: Planner, tasks: Tasks, focus: Focus, insights: Insights, categories: Categories };
 	const Current = $derived(VIEWS[$view] ?? Dashboard);
 
 	function onkeydown(e) {
@@ -26,7 +30,7 @@
 			$paletteOpen = !$paletteOpen;
 			return;
 		}
-		if (e.metaKey || e.ctrlKey || e.altKey || isTyping(e) || $paletteOpen || $settingsOpen) return;
+		if (e.metaKey || e.ctrlKey || e.altKey || isTyping(e) || $paletteOpen || $settingsOpen || $templatesOpen || $libraryOpen) return;
 		if (document.querySelector('[role="alertdialog"]')) return;
 
 		const nav = NAV.find((n) => n.key === e.key);
@@ -51,6 +55,29 @@
 				break;
 		}
 	}
+
+	// Toast newly unlocked achievements. The first run only records what's
+	// already unlocked, so existing data doesn't trigger a flood.
+	const SEEN_KEY = 'studently:achievements-seen';
+	$effect(() => {
+		const ids = $achievements.filter((a) => a.unlocked).map((a) => a.id);
+		let seen = null;
+		try {
+			seen = JSON.parse(localStorage.getItem(SEEN_KEY) ?? 'null');
+		} catch {
+			seen = null;
+		}
+		if (Array.isArray(seen)) {
+			const fresh = $achievements.filter((a) => a.unlocked && !seen.includes(a.id));
+			if (fresh.length === 1) toast(`Achievement unlocked: ${fresh[0].name}`, { tone: 'success' });
+			else if (fresh.length > 1) toast(`${fresh.length} achievements unlocked`, { tone: 'success' });
+		}
+		try {
+			localStorage.setItem(SEEN_KEY, JSON.stringify(Array.isArray(seen) ? [...new Set([...seen, ...ids])] : ids));
+		} catch {
+			/* storage blocked */
+		}
+	});
 
 	// Coming from the landing page, start at the top.
 	$effect(() => {
@@ -82,6 +109,8 @@
 
 <CommandPalette />
 <SettingsDrawer />
+<TemplatePicker />
+<TechniqueLibrary />
 
 <style>
 	.shell {

@@ -26,15 +26,15 @@
 </header>
 
 <nav class="mbar" aria-label="Main">
-	{#each NAV as item, i}
+	{#each NAV.filter((n) => n.id !== 'categories') as item, i}
 		{#if i === 2}
 			<button class="add" onclick={() => openPalette()} aria-label="Quick add">
-				<Plus size={22} />
+				<Plus size={22} weight="bold" />
 			</button>
 		{/if}
 		<button class="tab" class:active={$view === item.id} onclick={() => go(item.id)}>
 			<item.icon size={20} />
-			<span>{item.label === 'Categories' ? 'Labels' : item.label}</span>
+			<span>{item.label}</span>
 		</button>
 	{/each}
 </nav>
@@ -122,7 +122,7 @@
 			align-items: center;
 			gap: 3px;
 			padding: 6px 0;
-			font-size: 10.5px;
+			font-size: 10px;
 			font-weight: 550;
 			color: var(--text-3);
 			transition: color 0.2s, transform 0.2s;

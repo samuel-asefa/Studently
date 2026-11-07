@@ -4,7 +4,7 @@ const reducedMotion = () =>
 		document.documentElement.dataset.motion === 'reduce');
 
 function accentPalette() {
-	const h = Number(getComputedStyle(document.documentElement).getPropertyValue('--accent-h')) || 285;
+	const h = Number(getComputedStyle(document.documentElement).getPropertyValue('--accent-h')) || 258;
 	return [h, h + 55, h - 60, h + 150, 85].map((x) => `oklch(0.78 0.17 ${x})`);
 }
 

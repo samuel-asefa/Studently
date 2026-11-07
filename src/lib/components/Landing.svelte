@@ -9,10 +9,10 @@
 	import { parseQuick, describeParse } from '$lib/utils/parse.js';
 	import { tilt, spotlight } from '$lib/utils/use.js';
 	import { toggleTheme } from '$lib/theme.js';
-	import {
-		Sparkles, CalendarClock, Timer, Flame, TriangleAlert, WandSparkles, ArrowRight,
-		Sun, Moon, CloudCheck, Zap, Laptop, X, Check, Play
-	} from '$lib/icons.js';
+	import { TEMPLATES, MILESTONE_COUNT } from '$lib/content/templates.js';
+	import { TECHNIQUES, PRESETS } from '$lib/content/techniques.js';
+	import { ACHIEVEMENTS } from '$lib/content/achievements.js';
+	import { Sun, Moon, X, Exam, FileText } from '$lib/icons.js';
 
 	let authOpen = $state(false);
 	let authMode = $state('signup');
@@ -21,7 +21,6 @@
 		authMode = mode;
 		authOpen = true;
 	}
-
 
 	// Typewriter that runs the real quick-add parser on each keystroke.
 	const examples = [
@@ -33,6 +32,7 @@
 	];
 	let typed = $state('');
 	let chips = $derived(describeParse(parseQuick(typed)));
+	const KEY = { date: 'Due', hours: 'Time', priority: 'Priority', type: 'Type', category: 'In' };
 
 	$effect(() => {
 		let i = 0;
@@ -68,9 +68,9 @@
 	});
 
 	const planRows = [
-		{ name: 'Organic chemistry midterm', time: '1h 30m', hue: 285, w: 92 },
-		{ name: 'History essay: the Cold War', time: '1h 15m', hue: 40, w: 76 },
-		{ name: 'Calc II problem set 7', time: '30m', hue: 150, w: 34 }
+		{ icon: Exam, name: 'Organic chemistry midterm', time: '1h 30m', hue: 258, w: 92 },
+		{ icon: FileText, name: 'History essay: the Cold War', time: '1h 15m', hue: 40, w: 76 },
+		{ icon: FileText, name: 'Calc II problem set 7', time: '30m', hue: 150, w: 34 }
 	];
 	const week = [
 		[1.5, 1, 0.5], [1.75, 1, 0.75], [2, 1.25, 0], [2, 0.75, 0.5], [1.5, 1.5, 0], [1, 0.5, 0], [0.75, 0.5, 0.25]
@@ -78,32 +78,46 @@
 	const weekdays = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 	const today = new Date().getDay();
 
+	const numbers = [
+		{ value: TEMPLATES.length, label: 'plan templates' },
+		{ value: MILESTONE_COUNT, label: 'built-in milestones' },
+		{ value: TECHNIQUES.length, label: 'study techniques' },
+		{ value: PRESETS.length, label: 'focus timer presets' },
+		{ value: ACHIEVEMENTS.length, label: 'achievements' },
+		{ value: 15, label: 'minute planning blocks' }
+	];
+
 	const features = [
 		{
-			icon: CalendarClock,
 			title: 'A planner that plans for you',
-			body: 'Add a deadline and an estimate. Studently splits it into daily study blocks, weighted by priority and urgency, and keeps it inside the hours you actually have.',
+			body: 'Add a deadline and an estimate. Studently splits it into daily study blocks, weighted by priority and urgency, inside the hours you actually have. If the math doesn’t work, you’ll know days early.',
+			metrics: ['15-min blocks', '4 priority levels', 'daily budget', 'risk alerts'],
 			big: true
 		},
 		{
-			icon: WandSparkles,
 			title: 'Type it like you’d say it',
-			body: '“essay fri 4h !!” becomes a high-priority assignment due Friday with four hours planned.'
+			body: '“essay fri 4h !!” becomes a high-priority assignment due Friday with four hours planned.',
+			metrics: ['dates', 'durations', 'priority', '#category']
 		},
 		{
-			icon: Timer,
 			title: 'Focus that keeps score',
-			body: 'Every focus session logs progress to the deadline you picked, so your plan updates itself.'
+			body: 'Every session logs time to the deadline you picked, so your plan updates itself.',
+			metrics: [`${PRESETS.length} presets`, `${TECHNIQUES.length} techniques`]
 		},
 		{
-			icon: TriangleAlert,
-			title: 'No more 3 a.m. surprises',
-			body: 'If the math doesn’t work, you’ll know days early, with a one-tap fix.'
+			title: 'Templates for big projects',
+			body: 'Research papers, AP exams, college apps. Pick one, set the final date, and every step gets scheduled.',
+			metrics: [`${TEMPLATES.length} templates`, `${MILESTONE_COUNT} milestones`, '3 effort levels']
 		},
 		{
-			icon: Flame,
+			title: 'Insights you can act on',
+			body: 'See when you focus best, how close your estimates land, and how often you finish early.',
+			metrics: ['8 key metrics', '26-week heatmap', '3 charts']
+		},
+		{
 			title: 'Momentum you can see',
-			body: 'Streaks, weekly focus charts and progress rings that make showing up feel good.'
+			body: 'Streaks, progress rings and achievements in three tiers that make showing up feel good.',
+			metrics: [`${ACHIEVEMENTS.length} achievements`, '3 tiers', 'streaks']
 		}
 	];
 
@@ -132,10 +146,10 @@
 
 	<section class="hero">
 		<div class="copy stagger">
-			<span class="pill"><Sparkles size={14} /> Smart scheduling for students</span>
+			<span class="pill"><span class="pulse"></span> Free for students · works offline</span>
 			<h1 class="display headline">
 				Your semester,<br />
-				<em class="grad-text">beautifully</em><br />
+				<em>beautifully</em><br />
 				under control.
 			</h1>
 			<p class="lede">
@@ -143,18 +157,9 @@
 				and keeps everything in sync.
 			</p>
 			<div class="cta">
-				<button class="btn btn-primary btn-lg" onclick={() => openAuth('signup')}>
-					Get started free <ArrowRight size={18} />
-				</button>
-				<button class="btn btn-soft btn-lg" onclick={startGuest}>
-					<Play size={16} /> Try it as a guest
-				</button>
+				<button class="btn btn-primary btn-lg" onclick={() => openAuth('signup')}>Get started free →</button>
+				<button class="btn btn-soft btn-lg" onclick={startGuest}>Try it as a guest</button>
 			</div>
-			<ul class="proof">
-				<li><Zap size={14} /> 15-minute planning blocks</li>
-				<li><CloudCheck size={14} /> Works offline, syncs everywhere</li>
-				<li><Laptop size={14} /> No install needed</li>
-			</ul>
 		</div>
 
 		<div class="visual" in:fly={{ y: 40, duration: 1100, delay: 200, easing: cubicOut }}>
@@ -165,13 +170,13 @@
 				</div>
 				<div class="win-body">
 					<div class="mock-input">
-						<WandSparkles size={16} />
+						<span class="prompt mono">+</span>
 						<span class="typed">{typed}<span class="caret"></span></span>
 					</div>
 					<div class="mock-chips">
 						{#each chips as c (c.kind + c.label)}
-							<span class="chip {c.kind === 'priority' ? c.tone : 'accent'}" in:scale={{ start: 0.6, duration: 300, easing: backOut }}>
-								{c.label}
+							<span class="parsed" data-tone={c.kind === 'priority' ? c.tone : ''} in:scale={{ start: 0.7, duration: 300, easing: backOut }}>
+								<span class="k">{KEY[c.kind]}</span><span class="v">{c.label}</span>
 							</span>
 						{/each}
 					</div>
@@ -179,11 +184,11 @@
 					<div class="mock-plan">
 						<div class="row-head">
 							<span class="eyebrow">Today’s plan</span>
-							<span class="mono faint">3h 15m</span>
+							<span class="mono faint">3 blocks · 3h 15m</span>
 						</div>
 						{#each planRows as r, i}
 							<div class="plan-row" style:--h={r.hue} style:--d="{0.5 + i * 0.12}s">
-								<span class="pbar"></span>
+								<span class="pcode"><r.icon size={15} /></span>
 								<span class="pname">{r.name}</span>
 								<span class="ptime mono">{r.time}</span>
 								<span class="pprog"><span style:width="{r.w}%"></span></span>
@@ -196,7 +201,7 @@
 							<div class="wcol" class:now={i === today}>
 								<div class="wstack">
 									{#each stack as h, j}
-										<span style:height="{h * 20}px" style:--h={[285, 40, 150][j]} style:--d="{0.6 + i * 0.06}s"></span>
+										<span style:height="{h * 20}px" style:--h={[258, 40, 150][j]} style:--d="{0.6 + i * 0.06}s"></span>
 									{/each}
 								</div>
 								<span class="wlabel mono">{weekdays[i]}</span>
@@ -213,18 +218,28 @@
 				</Ring>
 				<div>
 					<div class="f-title">Focusing</div>
-					<div class="f-sub">Chem midterm · round 2</div>
+					<div class="f-sub">Chem midterm · round 2 of 4</div>
 				</div>
 			</div>
 			<div class="float f2 card">
-				<span class="flame"><Flame size={16} /></span>
-				<span><strong>6-day</strong> streak</span>
+				<span class="f-num num">6</span>
+				<span class="f-lab">day<br />streak</span>
+				<span class="streak">{#each [1, 1, 1, 1, 1, 1, 0] as on}<i class:on></i>{/each}</span>
 			</div>
 			<div class="float f3 card">
-				<span class="ok"><Check size={14} /></span>
-				<span>Calc pset done · <span class="faint">+2h logged</span></span>
+				<span class="f-num num">+2h</span>
+				<span>logged to <strong>Calc pset</strong></span>
 			</div>
 		</div>
+	</section>
+
+	<section class="numbers" aria-label="Studently by the numbers">
+		{#each numbers as n, i}
+			<div class="n-item" in:fly={{ y: 16, duration: 600, delay: 300 + i * 60, easing: cubicOut }}>
+				<span class="n-val num">{n.value}</span>
+				<span class="n-label">{n.label}</span>
+			</div>
+		{/each}
 	</section>
 
 	<section class="features">
@@ -233,18 +248,21 @@
 			<h2 class="display">Everything a semester needs.<br /><em class="faint">Nothing it doesn’t.</em></h2>
 		</div>
 		<div class="bento">
-			{#each features as f}
+			{#each features as f, i}
 				<article class="feat card spot" class:big={f.big} use:spotlight>
-					<span class="f-ico"><f.icon size={20} /></span>
+					<span class="index">{String(i + 1).padStart(2, '0')}</span>
 					<h3>{f.title}</h3>
 					<p>{f.body}</p>
 					{#if f.big}
 						<div class="mini-chart" aria-hidden="true">
 							{#each [3, 3.5, 4, 3.75, 2.5, 2, 1.5, 2.75, 3.25, 4, 3.5, 2] as h, i}
-								<span style:height="{h * 16}px" style:--h={[285, 40, 150, 200][i % 4]}></span>
+								<span style:height="{h * 16}px" style:--h={[258, 40, 150, 200][i % 4]}></span>
 							{/each}
 						</div>
 					{/if}
+					<ul class="metrics">
+						{#each f.metrics as m}<li class="mono">{m}</li>{/each}
+					</ul>
 				</article>
 			{/each}
 		</div>
@@ -252,9 +270,9 @@
 
 	<section class="personalize card">
 		<div>
-			<span class="eyebrow">Make it yours</span>
+			<span class="eyebrow">Make it yours · {ACCENTS.length} colors × 3 themes × 5 fonts</span>
 			<h2 class="display">Pick a color. <em>Any color.</em></h2>
-			<p class="muted">Every surface re-tints to match, in light or dark mode. Go on, try it.</p>
+			<p class="muted">Every surface re-tints to match, even the tab icon. Go on, try it.</p>
 		</div>
 		<div class="swatches">
 			{#each ACCENTS as a}
@@ -262,23 +280,20 @@
 					class="swatch"
 					class:on={$settings.accent === a.id}
 					style:--sh={a.h}
+					style:--sh2={a.h2}
 					onclick={() => ($settings.accent = a.id)}
 					aria-label="{a.label} accent"
 					title={a.label}
 				></button>
 			{/each}
-			<button class="btn btn-soft btn-sm" onclick={toggleTheme}>
-				<Sun size={15} class="only-dark" /><Moon size={15} class="only-light" /> Flip theme
-			</button>
+			<button class="btn btn-soft btn-sm" onclick={toggleTheme}>Flip theme</button>
 		</div>
 	</section>
 
 	<section class="final">
-		<h2 class="display">Your best semester<br />starts <em class="grad-text">tonight.</em></h2>
+		<h2 class="display">Your best semester<br />starts <em>tonight.</em></h2>
 		<div class="cta center">
-			<button class="btn btn-primary btn-lg" onclick={() => openAuth('signup')}>
-				Create a free account <ArrowRight size={18} />
-			</button>
+			<button class="btn btn-primary btn-lg" onclick={() => openAuth('signup')}>Create a free account →</button>
 			<button class="btn btn-ghost btn-lg" onclick={() => openAuth('signin')}>I already have one</button>
 		</div>
 	</section>
@@ -301,10 +316,13 @@
 			tabindex="-1"
 			transition:fly={{ y: 24, duration: 450, easing: cubicOut }}
 			onclick={(e) => e.stopPropagation()}
-			onkeydown={(e) => e.stopPropagation()}
+			onkeydown={(e) => {
+				e.stopPropagation();
+				if (e.key === 'Escape') (authOpen = false);
+			}}
 		>
 			<button class="btn btn-ghost btn-icon close" onclick={() => (authOpen = false)} aria-label="Close">
-				<X size={18} />
+				<X size={18} weight="bold" />
 			</button>
 			<AuthCard bind:mode={authMode} />
 		</div>
@@ -370,6 +388,7 @@
 	}
 	.headline em {
 		padding-right: 0.08em;
+		color: var(--accent);
 	}
 	.lede {
 		margin-top: 26px;
@@ -387,21 +406,42 @@
 	.cta.center {
 		justify-content: center;
 	}
-	.proof {
+	.pulse {
+		width: 7px;
+		height: 7px;
+		border-radius: 50%;
+		background: var(--success);
+		box-shadow: 0 0 0 3px oklch(0.74 0.16 155 / 0.2);
+	}
+
+	/* Numbers band */
+	.numbers {
+		display: grid;
+		grid-template-columns: repeat(6, 1fr);
+		border-top: 1px solid var(--border-2);
+		border-bottom: 1px solid var(--border-2);
+		margin-bottom: 72px;
+	}
+	.n-item {
 		display: flex;
-		flex-wrap: wrap;
-		gap: 10px 22px;
-		margin-top: 40px;
+		flex-direction: column;
+		gap: 6px;
+		padding: 26px 20px 24px;
+		border-left: 1px solid var(--border);
+	}
+	.n-item:first-child {
+		border-left: 0;
+		padding-left: 0;
+	}
+	.n-val {
+		font-size: clamp(34px, 4vw, 48px);
+		font-weight: 600;
+		letter-spacing: -0.05em;
+		line-height: 1;
+	}
+	.n-label {
 		font-size: 13px;
-		color: var(--text-3);
-	}
-	.proof li {
-		display: inline-flex;
-		align-items: center;
-		gap: 7px;
-	}
-	.proof :global(svg) {
-		color: var(--accent);
+		color: var(--text-2);
 	}
 
 	/* Product mock */
@@ -452,6 +492,10 @@
 		flex-direction: column;
 		gap: 14px;
 	}
+	.prompt {
+		font-size: 17px;
+		font-weight: 600;
+	}
 	.mock-input {
 		display: flex;
 		align-items: center;
@@ -489,6 +533,38 @@
 		min-height: 24px;
 		margin-top: -4px;
 	}
+	.parsed {
+		display: inline-flex;
+		height: 24px;
+		border-radius: 7px;
+		overflow: hidden;
+		border: 1px solid var(--border-2);
+		font-size: 12px;
+	}
+	.parsed .k {
+		display: grid;
+		place-items: center;
+		padding: 0 7px;
+		font-family: var(--font-mono);
+		font-size: 10px;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+		color: var(--text-3);
+		background: var(--surface-2);
+		border-right: 1px solid var(--border);
+	}
+	.parsed .v {
+		display: grid;
+		place-items: center;
+		padding: 0 8px;
+		font-weight: 550;
+	}
+	.parsed[data-tone='danger'] .v {
+		color: var(--danger);
+	}
+	.parsed[data-tone='warn'] .v {
+		color: var(--warn);
+	}
 	.mock-plan {
 		padding: 14px;
 		border-radius: 16px;
@@ -505,7 +581,7 @@
 	}
 	.plan-row {
 		display: grid;
-		grid-template-columns: 4px 1fr auto;
+		grid-template-columns: 28px 1fr auto;
 		grid-template-rows: auto auto;
 		column-gap: 12px;
 		row-gap: 6px;
@@ -513,11 +589,18 @@
 		animation: rise 0.7s var(--ease-out) both;
 		animation-delay: var(--d);
 	}
-	.pbar {
+	.pcode {
 		grid-row: span 2;
-		height: 100%;
-		border-radius: 4px;
-		background: oklch(0.7 0.16 var(--h));
+		display: grid;
+		place-items: center;
+		height: 28px;
+		border-radius: 8px;
+		color: oklch(0.82 0.13 var(--h));
+		background: oklch(0.7 0.16 var(--h) / 0.18);
+		box-shadow: inset 0 0 0 1px oklch(0.7 0.16 var(--h) / 0.28);
+	}
+	:global([data-theme='light']) .pcode {
+		color: oklch(0.45 0.17 var(--h));
 	}
 	.pname {
 		font-size: 13.5px;
@@ -639,23 +722,32 @@
 		font-size: 12px;
 		color: var(--text-3);
 	}
-	.flame {
-		display: grid;
-		place-items: center;
-		width: 28px;
-		height: 28px;
-		border-radius: 9px;
-		color: oklch(0.78 0.17 55);
-		background: oklch(0.78 0.17 55 / 0.15);
+	.f-num {
+		font-size: 22px;
+		font-weight: 600;
+		letter-spacing: -0.04em;
+		color: var(--accent);
 	}
-	.ok {
-		display: grid;
-		place-items: center;
-		width: 22px;
-		height: 22px;
-		border-radius: 7px;
-		color: #fff;
-		background: var(--success);
+	.f-lab {
+		font-size: 11.5px;
+		line-height: 1.15;
+		color: var(--text-2);
+	}
+	.streak {
+		display: flex;
+		gap: 3px;
+	}
+	.streak i {
+		width: 8px;
+		height: 18px;
+		border-radius: 3px;
+		background: var(--surface-3);
+	}
+	.streak i.on {
+		background: var(--accent);
+	}
+	.f3 strong {
+		font-weight: 600;
 	}
 	@keyframes bob {
 		from { transform: translateY(0); }
@@ -691,15 +783,27 @@
 	.feat.big {
 		grid-column: span 2;
 	}
-	.f-ico {
-		display: grid;
-		place-items: center;
-		width: 42px;
-		height: 42px;
-		border-radius: 13px;
-		background: var(--accent-soft);
-		color: var(--accent-ink);
-		margin-bottom: 20px;
+	.feat {
+		display: flex;
+		flex-direction: column;
+	}
+	.feat .index {
+		margin-bottom: 18px;
+	}
+	.metrics {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 6px;
+		margin-top: auto;
+		padding-top: 18px;
+	}
+	.metrics li {
+		padding: 3px 8px;
+		border-radius: 6px;
+		font-size: 11px;
+		color: var(--text-2);
+		background: var(--surface-2);
+		border: 1px solid var(--border);
 	}
 	.feat h3 {
 		font-size: 18px;
@@ -718,6 +822,9 @@
 		gap: 8px;
 		height: 72px;
 		margin-top: 22px;
+	}
+	.feat:last-child {
+		grid-column: span 3;
 	}
 	.mini-chart span {
 		flex: 1;
@@ -757,7 +864,7 @@
 		width: 38px;
 		height: 38px;
 		border-radius: 50%;
-		background: linear-gradient(135deg, oklch(0.66 0.2 var(--sh)), oklch(0.66 0.19 calc(var(--sh) + 45)));
+		background: linear-gradient(135deg, oklch(0.66 0.2 var(--sh)), oklch(0.64 0.18 var(--sh2)));
 		box-shadow: 0 0 0 1px oklch(1 0 0 / 0.15) inset;
 		transition: transform 0.35s var(--ease-spring), box-shadow 0.3s;
 	}
@@ -778,6 +885,9 @@
 		font-size: clamp(46px, 6.5vw, 84px);
 		line-height: 0.98;
 		letter-spacing: -0.03em;
+	}
+	.final h2 em {
+		color: var(--accent);
 	}
 
 	.foot {
@@ -840,6 +950,19 @@
 		.bento {
 			grid-template-columns: 1fr 1fr;
 		}
+		.feat:last-child {
+			grid-column: span 2;
+		}
+		.numbers {
+			grid-template-columns: repeat(3, 1fr);
+		}
+		.n-item:nth-child(4) {
+			border-left: 0;
+			padding-left: 0;
+		}
+		.n-item:nth-child(n + 4) {
+			border-top: 1px solid var(--border);
+		}
 	}
 	@media (max-width: 640px) {
 		.landing {
@@ -875,8 +998,26 @@
 		.bento {
 			grid-template-columns: 1fr;
 		}
-		.feat.big {
+		.feat.big,
+		.feat:last-child {
 			grid-column: auto;
+		}
+		.numbers {
+			grid-template-columns: repeat(2, 1fr);
+		}
+		.n-item {
+			padding: 20px 14px;
+		}
+		.n-item:nth-child(odd) {
+			border-left: 0;
+			padding-left: 0;
+		}
+		.n-item:nth-child(4) {
+			border-left: 1px solid var(--border);
+			padding-left: 14px;
+		}
+		.n-item:nth-child(n + 3) {
+			border-top: 1px solid var(--border);
 		}
 		.personalize {
 			padding: 28px 22px;

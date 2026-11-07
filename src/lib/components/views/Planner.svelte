@@ -9,13 +9,11 @@
 	import DeadlineForm from '../DeadlineForm.svelte';
 	import { deadlines, plan, settings } from '$lib/stores.js';
 	import { addDeadline, updateDeadline, toggleDeadline } from '$lib/actions.js';
-	import { toast, go, focusTarget } from '$lib/ui.js';
+	import { toast, go, focusTarget, templatesOpen } from '$lib/ui.js';
+	import { TEMPLATES } from '$lib/content/templates.js';
 	import { relativeDay, relativeLower, shortDate, formatHours, todayISO, toISO, addDays, startOfDay, parseISO } from '$lib/utils/date.js';
 	import { seriesColor } from '$lib/constants.js';
-	import {
-		Minus, Plus, SlidersHorizontal, TriangleAlert, CalendarClock, CalendarDays, Play,
-		ChevronDown, Sparkles, PartyPopper, CircleCheck, Coffee
-	} from '$lib/icons.js';
+	import { Minus, Plus, ChevronDown, Play } from '$lib/icons.js';
 
 	let text = $state('');
 	let showForm = $state(false);
@@ -79,15 +77,14 @@
 			</p>
 		</div>
 		<div class="budget card">
-			<SlidersHorizontal size={16} />
 			<span class="b-label">Daily study budget</span>
 			<div class="b-ctl">
 				<button class="btn btn-soft btn-icon btn-sm" onclick={() => setBudget($settings.dailyHours - 0.5)} aria-label="Less time per day">
-					<Minus size={14} />
+					<Minus size={14} weight="bold" />
 				</button>
 				<span class="b-val num">{formatHours($settings.dailyHours)}</span>
 				<button class="btn btn-soft btn-icon btn-sm" onclick={() => setBudget($settings.dailyHours + 0.5)} aria-label="More time per day">
-					<Plus size={14} />
+					<Plus size={14} weight="bold" />
 				</button>
 			</div>
 		</div>
@@ -100,9 +97,14 @@
 				Dates: <code>fri</code> <code>next tue</code> <code>nov 20</code> <code>in 5 days</code> · Hours: <code>3h</code>
 				<code>90m</code> · Priority: <code>!</code> <code>!!</code> <code>!!!</code>
 			</span>
-			<button class="btn btn-ghost btn-sm" onclick={() => (showForm = !showForm)} aria-expanded={showForm}>
-				Detailed form <span class="chev" class:open={showForm}><ChevronDown size={14} /></span>
-			</button>
+			<div class="add-btns">
+				<button class="btn btn-soft btn-sm" onclick={() => templatesOpen.set(true)}>
+					Templates <span class="faint num">{TEMPLATES.length}</span>
+				</button>
+				<button class="btn btn-ghost btn-sm" onclick={() => (showForm = !showForm)} aria-expanded={showForm}>
+					Detailed form <span class="chev" class:open={showForm}><ChevronDown size={14} weight="bold" /></span>
+				</button>
+			</div>
 		</div>
 		{#if showForm}
 			<div class="form-wrap" transition:slide={{ duration: 350, easing: cubicOut }}>
@@ -115,7 +117,6 @@
 		<section class="warnings" transition:slide>
 			{#each $plan.overdue as d (d.id)}
 				<div class="warn-row card" transition:slide>
-					<span class="w-ico danger"><TriangleAlert size={16} /></span>
 					<span class="w-text"><strong>{d.name}</strong> was due {relativeLower(d.dueDate)}.</span>
 					<button class="btn btn-soft btn-sm" onclick={() => moveToTomorrow(d.id)}>Move to tomorrow</button>
 					<button class="btn btn-accent-soft btn-sm" onclick={(e) => toggleDeadline(d.id, e.currentTarget)}>Mark done</button>
@@ -123,13 +124,12 @@
 			{/each}
 			{#each $plan.risks as r (r.id)}
 				<div class="warn-row card" transition:slide>
-					<span class="w-ico"><TriangleAlert size={16} /></span>
 					<span class="w-text">
 						<strong>{r.name}</strong> needs <strong>{formatHours(r.shortfall)}</strong> more than your budget allows before
 						{relativeLower(r.dueDate)}.
 					</span>
 					<button class="btn btn-accent-soft btn-sm" onclick={() => setBudget($settings.dailyHours + 1)}>
-						<Plus size={14} /> 1h per day
+						+1h per day
 					</button>
 				</div>
 			{/each}
@@ -139,7 +139,7 @@
 	<section class="grid">
 		<div class="list-col">
 			<div class="list-head">
-				<h2 class="card-title"><span class="ico"><CalendarClock size={16} /></span> Deadlines</h2>
+				<h2 class="card-title">Deadlines</h2>
 				<div class="seg">
 					<button class:on={filter === 'active'} onclick={() => (filter = 'active')}>Active <span class="faint num">{counts.active}</span></button>
 					<button class:on={filter === 'done'} onclick={() => (filter = 'done')}>Done <span class="faint num">{counts.done}</span></button>
@@ -156,9 +156,6 @@
 				</div>
 			{:else}
 				<div class="card empty">
-					<span class="empty-ico">
-						{#if filter === 'done'}<CircleCheck size={22} />{:else if $deadlines.length}<PartyPopper size={22} />{:else}<Sparkles size={22} />{/if}
-					</span>
 					<h3>
 						{filter === 'done' ? 'Nothing finished yet' : $deadlines.length ? 'All done!' : 'Your planner is empty'}
 					</h3>
@@ -175,8 +172,8 @@
 
 		<aside class="sched-col card card-pad">
 			<div class="card-head">
-				<h2 class="card-title"><span class="ico"><CalendarDays size={16} /></span> Your schedule</h2>
-				<span class="mono faint">{formatHours($plan.totalPlanned)} planned</span>
+				<h2 class="card-title">Your schedule</h2>
+				<span class="card-meta">{$plan.days.filter((d) => d.items.length).length} days · {formatHours($plan.totalPlanned)} planned</span>
 			</div>
 			<ScheduleChart days={$plan.days} budget={$plan.budget} doneToday={$plan.usedToday} bind:selected />
 
@@ -219,7 +216,6 @@
 								</li>
 							{:else}
 								<li class="rest">
-									<Coffee size={18} />
 									<span>{$deadlines.some((d) => !d.completed) ? 'Free day. Rest is part of the plan.' : 'Nothing scheduled.'}</span>
 								</li>
 							{/each}
@@ -310,19 +306,23 @@
 		border-color: oklch(0.8 0.15 75 / 0.28);
 		background: linear-gradient(90deg, oklch(0.8 0.15 75 / 0.09), var(--surface) 60%);
 	}
-	.w-ico {
-		display: grid;
-		place-items: center;
-		width: 30px;
-		height: 30px;
-		border-radius: 10px;
-		flex-shrink: 0;
-		color: var(--warn);
-		background: oklch(0.8 0.15 75 / 0.15);
+	.warn-row {
+		position: relative;
+		overflow: hidden;
+		padding-left: 18px;
 	}
-	.w-ico.danger {
-		color: var(--danger);
-		background: oklch(0.66 0.21 25 / 0.14);
+	.warn-row::before {
+		content: '';
+		position: absolute;
+		left: 0;
+		top: 0;
+		bottom: 0;
+		width: 3px;
+		background: var(--warn);
+	}
+	.add-btns {
+		display: flex;
+		gap: 6px;
 	}
 	.w-text {
 		flex: 1;

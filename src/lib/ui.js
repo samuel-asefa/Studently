@@ -33,6 +33,10 @@ export function openPalette(seed = '') {
 	paletteOpen.set(true);
 }
 
+/** Template picker (Planner) and technique library (Focus) overlays. */
+export const templatesOpen = writable(false);
+export const libraryOpen = writable(false);
+
 /** Deadline the focus timer should preselect when the Focus view opens. */
 export const focusTarget = writable(null);
 

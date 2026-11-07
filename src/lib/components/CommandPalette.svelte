@@ -3,7 +3,9 @@
 	import { cubicOut } from 'svelte/easing';
 	import { signOut } from 'firebase/auth';
 	import { auth } from '$lib/firebase.js';
-	import { paletteOpen, paletteSeed, go, settingsOpen, toast, confirm, focusTarget } from '$lib/ui.js';
+	import { paletteOpen, paletteSeed, go, settingsOpen, toast, confirm, focusTarget, templatesOpen, libraryOpen } from '$lib/ui.js';
+	import { TEMPLATES } from '$lib/content/templates.js';
+	import { TECHNIQUES } from '$lib/content/techniques.js';
 	import { tasks, deadlines, categories, user, replaceAll, leaveGuest } from '$lib/stores.js';
 	import { addTask, addDeadline } from '$lib/actions.js';
 	import { parseQuick, describeParse } from '$lib/utils/parse.js';
@@ -14,7 +16,7 @@
 	import { demoData } from '$lib/demo.js';
 	import { autofocus } from '$lib/utils/use.js';
 	import {
-		Search, Plus, CalendarClock, Play, SunMoon, Settings, Sparkles, LogOut, CornerDownLeft, ListChecks, Check
+		Search, Plus, CalendarClock, Play, SunMoon, Settings, Layers, BookOpen, Download, LogOut, CornerDownLeft, ListChecks, Check
 	} from '$lib/icons.js';
 
 	let query = $state('');
@@ -89,12 +91,14 @@
 		const commands = [
 			...NAV.map((n) => ({ group: 'Go to', id: `nav-${n.id}`, icon: n.icon, label: n.label, kbd: n.key, run: () => go(n.id) })),
 			{ group: 'Actions', id: 'focus', icon: Play, label: 'Start a focus session', run: () => (go('focus'), startTimer()) },
+			{ group: 'Actions', id: 'templates', icon: Layers, label: `Plan from a template (${TEMPLATES.length})`, run: () => (go('planner'), templatesOpen.set(true)) },
+			{ group: 'Actions', id: 'techniques', icon: BookOpen, label: `Browse study techniques (${TECHNIQUES.length})`, run: () => libraryOpen.set(true) },
 			{ group: 'Actions', id: 'theme', icon: SunMoon, label: 'Toggle light / dark mode', kbd: 'T', run: () => toggleTheme() },
 			{ group: 'Actions', id: 'settings', icon: Settings, label: 'Open settings', kbd: ',', run: () => settingsOpen.set(true) },
 			{
 				group: 'Actions',
 				id: 'demo',
-				icon: Sparkles,
+				icon: Download,
 				label: 'Load a sample semester',
 				run: async () => {
 					const empty = !$tasks.length && !$deadlines.length;
@@ -182,7 +186,10 @@
 			tabindex="-1"
 			transition:scale={{ start: 0.96, duration: 220, easing: cubicOut }}
 			onclick={(e) => e.stopPropagation()}
-			onkeydown={(e) => e.stopPropagation()}
+			onkeydown={(e) => {
+				e.stopPropagation();
+				if (e.key === 'Escape') close();
+			}}
 		>
 			<div class="search">
 				<Search size={18} />
@@ -222,7 +229,7 @@
 						{/if}
 						{#if it.hint}<span class="hint">{it.hint}</span>{/if}
 						{#if it.kbd}<span class="kbd">{it.kbd}</span>{/if}
-						<span class="enter"><CornerDownLeft size={14} /></span>
+						<span class="enter"><CornerDownLeft size={14} weight="bold" /></span>
 					</button>
 				{:else}
 					<div class="nothing">No matches.</div>

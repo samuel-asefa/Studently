@@ -8,7 +8,7 @@
 	import { go, focusTarget } from '$lib/ui.js';
 	import { priorityFor, seriesColor } from '$lib/constants.js';
 	import { relativeDay, shortDate, formatHours, daysUntil } from '$lib/utils/date.js';
-	import { Pencil, Trash, Play, Plus, Minus, Clock } from '$lib/icons.js';
+	import { Pencil, Trash, Play, Plus, Minus } from '$lib/icons.js';
 
 	let { d } = $props();
 	let editing = $state(false);
@@ -41,7 +41,7 @@
 					{n < 0 && !d.completed ? `${-n}d overdue` : relativeDay(d.dueDate)} · {shortDate(d.dueDate)}
 				</span>
 				{#if prio.id !== 'normal'}<span class="chip {prio.tone}">{prio.label}</span>{/if}
-				<span class="hours"><Clock size={12} /> {d.completed ? formatHours(d.hoursSpent) + ' logged' : `${formatHours(left)} left`}</span>
+				<span class="hours mono">{d.completed ? formatHours(d.hoursSpent) + ' logged' : `${formatHours(left)} left`}</span>
 			</span>
 		</button>
 		<div class="actions">
@@ -73,11 +73,11 @@
 		{#if !d.completed}
 			<div class="log">
 				<button class="mini" onclick={() => logTime(d.id, -0.5)} disabled={d.hoursSpent <= 0} aria-label="Remove 30 minutes">
-					<Minus size={12} />
+					<Minus size={12} weight="bold" />
 				</button>
 				<span class="mono">30m</span>
 				<button class="mini" onclick={() => logTime(d.id, 0.5)} aria-label="Log 30 minutes">
-					<Plus size={12} />
+					<Plus size={12} weight="bold" />
 				</button>
 			</div>
 		{/if}

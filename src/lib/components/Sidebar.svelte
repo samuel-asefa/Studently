@@ -3,6 +3,7 @@
 	import { cubicOut } from 'svelte/easing';
 	import Logo from './ui/Logo.svelte';
 	import Ring from './ui/Ring.svelte';
+	import Avatar from './ui/Avatar.svelte';
 	import { NAV } from '$lib/constants.js';
 	import { view, go, openPalette, settingsOpen } from '$lib/ui.js';
 	import { user, guest, syncState, stats, plan, displayName } from '$lib/stores.js';
@@ -10,7 +11,7 @@
 	import { formatClock, formatHours, daysUntil } from '$lib/utils/date.js';
 	import { toggleTheme } from '$lib/theme.js';
 	import {
-		Search, Settings, Sun, Moon, Play, Pause, CloudCheck, CloudOff, LoaderCircle, Laptop, Plus
+		Search, Settings, Sun, Moon, Play, Pause, Plus
 	} from '$lib/icons.js';
 
 	const activeIndex = $derived(Math.max(0, NAV.findIndex((n) => n.id === $view)));
@@ -23,14 +24,6 @@
 	const urgent = $derived($stats.overdue > 0);
 	const todayDone = $derived($stats.focusToday / 60);
 	const todayPlanned = $derived(todayDone + ($plan.days[0]?.total ?? 0));
-	const initials = $derived(
-		($displayName || $user?.email || 'G')
-			.split(/\s+/)
-			.map((p) => p[0])
-			.join('')
-			.slice(0, 2)
-			.toUpperCase()
-	);
 	const isMac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform);
 </script>
 
@@ -70,7 +63,7 @@
 	</nav>
 
 	<button class="quick btn btn-primary btn-block" onclick={() => openPalette()}>
-		<Plus size={17} /> Quick add
+		<Plus size={16} weight="bold" /> Quick add
 	</button>
 
 	{#if $timer.status !== 'idle'}
@@ -101,22 +94,18 @@
 	</div>
 
 	<button class="me" onclick={() => ($settingsOpen = true)}>
-		{#if $user?.photoURL}
-			<img class="avatar" src={$user.photoURL} alt="" referrerpolicy="no-referrer" />
-		{:else}
-			<span class="avatar initials">{initials}</span>
-		{/if}
+		<Avatar photo={$user?.photoURL ?? null} seed={$user ? ($user.uid ?? $user.email) : ''} label={$displayName || 'Guest'} />
 		<span class="who">
 			<span class="name">{$displayName || ($guest ? 'Guest' : 'Student')}</span>
 			<span class="sync">
 				{#if $guest}
-					<Laptop size={12} /> On this device
+					<span class="status-dot local"></span> On this device
 				{:else if $syncState === 'saving'}
-					<LoaderCircle size={12} class="spin" /> Saving…
+					<span class="status-dot saving"></span> Saving…
 				{:else if $syncState === 'error'}
-					<CloudOff size={12} /> Offline · will sync
+					<span class="status-dot error"></span> Offline, will sync
 				{:else}
-					<CloudCheck size={12} /> Synced
+					<span class="status-dot"></span> Synced
 				{/if}
 			</span>
 		</span>
@@ -316,20 +305,6 @@
 		background: var(--surface-2);
 		color: var(--text);
 	}
-	.avatar {
-		width: 34px;
-		height: 34px;
-		border-radius: 11px;
-		object-fit: cover;
-	}
-	.initials {
-		display: grid;
-		place-items: center;
-		font-size: 12.5px;
-		font-weight: 650;
-		color: #fff;
-		background: linear-gradient(135deg, var(--btn-a), var(--btn-b));
-	}
 	.who {
 		flex: 1;
 		min-width: 0;
@@ -350,7 +325,8 @@
 	.sync {
 		display: inline-flex;
 		align-items: center;
-		gap: 5px;
+		gap: 7px;
+		margin-top: 2px;
 		font-size: 11.5px;
 		color: var(--text-3);
 	}

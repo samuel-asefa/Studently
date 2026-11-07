@@ -3,14 +3,11 @@
 	import { fly } from 'svelte/transition';
 	import { flip } from 'svelte/animate';
 	import { backOut } from 'svelte/easing';
-	import { CircleCheck, CircleAlert, Sparkles, Undo, X } from '$lib/icons.js';
-
-	const ICONS = { success: CircleCheck, danger: CircleAlert, default: Sparkles };
+	import { X } from '$lib/icons.js';
 </script>
 
 <div class="toasts" aria-live="polite" aria-atomic="false">
 	{#each $toasts as t (t.id)}
-		{@const Icon = t.icon ?? ICONS[t.tone] ?? Sparkles}
 		<div
 			class="toast {t.tone}"
 			role="status"
@@ -18,7 +15,7 @@
 			in:fly={{ y: 28, duration: 500, easing: backOut }}
 			out:fly={{ y: 10, duration: 200 }}
 		>
-			<span class="ico"><Icon size={16} /></span>
+			<span class="dot-ico" aria-hidden="true"></span>
 			<span class="msg">{t.message}</span>
 			{#if t.action}
 				<button
@@ -28,12 +25,11 @@
 						dismissToast(t.id);
 					}}
 				>
-					{#if t.action.label === 'Undo'}<Undo size={14} />{/if}
 					{t.action.label}
 				</button>
 			{/if}
 			<button class="x" onclick={() => dismissToast(t.id)} aria-label="Dismiss">
-				<X size={14} />
+				<X size={14} weight="bold" />
 			</button>
 		</div>
 	{/each}
@@ -68,16 +64,21 @@
 		font-size: 14px;
 		font-weight: 500;
 	}
-	.ico {
-		display: grid;
-		place-items: center;
-		color: var(--accent);
+	.dot-ico {
+		width: 8px;
+		height: 8px;
+		border-radius: 50%;
+		flex-shrink: 0;
+		background: var(--accent);
+		box-shadow: 0 0 0 3px var(--accent-soft);
 	}
-	.success .ico {
-		color: var(--success);
+	.success .dot-ico {
+		background: var(--success);
+		box-shadow: 0 0 0 3px oklch(0.74 0.16 155 / 0.18);
 	}
-	.danger .ico {
-		color: var(--danger);
+	.danger .dot-ico {
+		background: var(--danger);
+		box-shadow: 0 0 0 3px oklch(0.66 0.21 25 / 0.18);
 	}
 	.msg {
 		flex: 1;

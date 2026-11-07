@@ -8,7 +8,7 @@
 	import { addTask, toggleTask, updateTask, deleteTask, clearCompleted } from '$lib/actions.js';
 	import { go } from '$lib/ui.js';
 	import { autofocus } from '$lib/utils/use.js';
-	import { Plus, Search, Trash, Pencil, X, Inbox, Tag, ListChecks, CornerDownLeft } from '$lib/icons.js';
+	import { Search, Trash, Pencil, X, Plus } from '$lib/icons.js';
 
 	let text = $state('');
 	let category = $state(Object.keys($categories)[0] ?? '');
@@ -107,11 +107,10 @@
 	<section class="add card card-pad">
 		<form class="add-row" onsubmit={add}>
 			<div class="add-input">
-				<Plus size={18} />
 				<input class="input" bind:value={text} placeholder="What needs doing? Use #category to file it" aria-label="New task" />
 			</div>
 			<button class="btn btn-primary" type="submit" disabled={!text.trim()}>
-				Add task <span class="kbd enter"><CornerDownLeft size={11} /></span>
+				Add task <span class="kbd enter">↵</span>
 			</button>
 		</form>
 		<div class="cats" role="radiogroup" aria-label="Category">
@@ -129,9 +128,9 @@
 				</button>
 			{/each}
 			<button type="button" class="cat" class:on={category === ''} role="radio" aria-checked={category === ''} onclick={() => (category = '')}>
-				<Inbox size={12} /> Inbox
+				Inbox
 			</button>
-			<button type="button" class="cat ghost" onclick={() => go('categories')}><Tag size={12} /> Manage</button>
+			<button type="button" class="cat ghost" onclick={() => go('categories')}>Manage categories</button>
 		</div>
 	</section>
 
@@ -144,10 +143,10 @@
 		<div class="search">
 			<Search size={15} />
 			<input class="input" bind:value={query} placeholder="Search tasks" aria-label="Search tasks" />
-			{#if query}<button class="clear" onclick={() => (query = '')} aria-label="Clear search"><X size={14} /></button>{/if}
+			{#if query}<button class="clear" onclick={() => (query = '')} aria-label="Clear search"><X size={14} weight="bold" /></button>{/if}
 		</div>
 		<button class="btn btn-ghost btn-sm" onclick={clearCompleted} disabled={!done}>
-			<Trash size={14} /> Clear completed
+			Clear completed <span class="num faint">{done}</span>
 		</button>
 	</section>
 
@@ -181,7 +180,7 @@
 						{/each}
 					</ul>
 					<form class="g-add" onsubmit={(e) => addInline(e, g.name)}>
-						<Plus size={14} />
+						<Plus size={14} weight="bold" />
 						<input bind:value={inline[g.name]} placeholder="Add to {g.name === INBOX ? 'Inbox' : g.name}" aria-label="Add task to {g.name === INBOX ? 'Inbox' : g.name}" />
 					</form>
 				</article>
@@ -189,7 +188,6 @@
 		</section>
 	{:else}
 		<div class="card empty">
-			<span class="empty-ico"><ListChecks size={22} /></span>
 			<h3>{query ? 'No matches' : filter === 'done' ? 'Nothing completed yet' : 'No tasks'}</h3>
 			<p>{query ? `Nothing matches “${query}”.` : 'Add one above to get going.'}</p>
 		</div>
@@ -237,15 +235,9 @@
 		display: flex;
 		align-items: center;
 	}
-	.add-input :global(svg) {
-		position: absolute;
-		left: 16px;
-		color: var(--accent);
-		pointer-events: none;
-	}
 	.add-input .input {
 		height: 50px;
-		padding-left: 46px;
+		padding-left: 18px;
 		font-size: 15px;
 		border-radius: 14px;
 	}
@@ -457,6 +449,7 @@
 	.g-add:focus-within {
 		color: var(--accent);
 	}
+
 	@media (hover: none) {
 		.t-actions {
 			opacity: 1;

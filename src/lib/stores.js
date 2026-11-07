@@ -7,6 +7,7 @@ import { uid, clamp } from './utils/id.js';
 import { isISODate, todayISO, toISO, addDays, startOfDay } from './utils/date.js';
 import { buildPlan } from './utils/scheduler.js';
 import { registerHues, pickHue, SERIES_HUES } from './constants.js';
+import { computeFacts, computeAchievements, computeInsights } from './insights.js';
 import { toast } from './ui.js';
 
 /* ==========================================================================
@@ -15,7 +16,7 @@ import { toast } from './ui.js';
 
 export const DEFAULT_SETTINGS = {
 	theme: 'system', // 'system' | 'light' | 'dark'
-	accent: 'iris',
+	accent: 'blue',
 	font: 'Geist',
 	effects: true,
 	reduceMotion: false,
@@ -139,7 +140,9 @@ function normDeadlines(list) {
 			completedAt: d.completedAt ?? null,
 			createdAt: Number(d.createdAt) || Number(d.id) || Date.now(),
 			notes: String(d.notes ?? ''),
-			hue: validHue ? d.hue : pickHue(out)
+			hue: validHue ? d.hue : pickHue(out),
+			template: typeof d.template === 'string' ? d.template : null,
+			group: typeof d.group === 'string' ? d.group : null
 		});
 	}
 	return out;
@@ -398,7 +401,7 @@ export const stats = derived([tasks, deadlines, sessions, today], ([$t, $d, $s, 
 
 	const week = Array.from({ length: 7 }, (_, i) => {
 		const iso = toISO(addDays(startOfDay(), i - 6));
-		return { date: iso, minutes: Math.round(focusByDay.get(iso) ?? 0) };
+		return { date: iso, minutes: Math.round(focusByDay.get(iso) ?? 0), active: activeDays.has(iso) };
 	});
 
 	const activeTasks = $t.filter((t) => !t.done);
@@ -422,3 +425,14 @@ export const stats = derived([tasks, deadlines, sessions, today], ([$t, $d, $s, 
 		overdue: upcoming.filter((d) => d.dueDate < $today).length
 	};
 });
+
+/** Raw counts behind achievements and Insights. */
+export const facts = derived([tasks, deadlines, sessions, categories, today], ([$t, $d, $s, $c]) =>
+	computeFacts({ tasks: $t, deadlines: $d, sessions: $s, categories: $c })
+);
+
+export const achievements = derived(facts, ($f) => computeAchievements($f));
+
+export const insights = derived([deadlines, sessions, today], ([$d, $s]) =>
+	computeInsights({ deadlines: $d, sessions: $s })
+);

@@ -11,9 +11,7 @@
 	import { setTheme } from '$lib/theme.js';
 	import { demoData } from '$lib/demo.js';
 	import { todayISO, formatHours } from '$lib/utils/date.js';
-	import {
-		X, Sun, Moon, Monitor, Download, Upload, Sparkles, Trash, LogOut, User, Palette, Timer, Keyboard, CloudCheck, Laptop, ArrowRight
-	} from '$lib/icons.js';
+	import { X } from '$lib/icons.js';
 
 	let fileInput = $state();
 	const close = () => settingsOpen.set(false);
@@ -94,7 +92,7 @@
 	const shortcuts = [
 		['⌘ K', 'Command palette'],
 		['N', 'Quick add'],
-		['1 – 5', 'Switch views'],
+		['1 – 6', 'Switch views'],
 		['T', 'Toggle theme'],
 		['Space', 'Start / pause timer (Focus)'],
 		[',', 'Settings']
@@ -110,43 +108,43 @@
 	<div class="drawer" role="dialog" aria-modal="true" aria-label="Settings" transition:fly={{ x: 60, duration: 420, easing: cubicOut }}>
 		<header class="d-head">
 			<h2 class="display">Settings</h2>
-			<button class="btn btn-ghost btn-icon" onclick={close} aria-label="Close settings"><X size={18} /></button>
+			<button class="btn btn-ghost btn-icon" onclick={close} aria-label="Close settings"><X size={18} weight="bold" /></button>
 		</header>
 
 		<div class="d-body">
 			<section>
-				<h3><User size={15} /> Profile</h3>
+				<h3><span class="index">01</span> Profile</h3>
 				<div class="field">
 					<label class="label" for="set-name">What should we call you?</label>
 					<input id="set-name" class="input" bind:value={$settings.name} placeholder={$displayName || 'Your first name'} maxlength="30" />
 				</div>
 				<div class="account card">
 					{#if $user}
-						<CloudCheck size={18} />
+						<span class="status-dot"></span>
 						<div class="acc-body">
 							<strong>Synced to your account</strong>
 							<span class="faint">{$user.email}</span>
 						</div>
-						<button class="btn btn-soft btn-sm" onclick={doSignOut}><LogOut size={14} /> Sign out</button>
+						<button class="btn btn-soft btn-sm" onclick={doSignOut}>Sign out</button>
 					{:else if $guest}
-						<Laptop size={18} />
+						<span class="status-dot local"></span>
 						<div class="acc-body">
 							<strong>Guest mode</strong>
 							<span class="faint">Saved on this device only.</span>
 						</div>
-						<button class="btn btn-primary btn-sm" onclick={toAccount}>Sync <ArrowRight size={14} /></button>
+						<button class="btn btn-primary btn-sm" onclick={toAccount}>Create account</button>
 					{/if}
 				</div>
 			</section>
 
 			<section>
-				<h3><Palette size={15} /> Appearance</h3>
+				<h3><span class="index">02</span> Appearance</h3>
 				<div class="field">
 					<span class="label">Theme</span>
 					<div class="seg block">
-						<button class:on={$settings.theme === 'light'} onclick={(e) => setTheme('light', e)}><Sun size={14} /> Light</button>
-						<button class:on={$settings.theme === 'dark'} onclick={(e) => setTheme('dark', e)}><Moon size={14} /> Dark</button>
-						<button class:on={$settings.theme === 'system'} onclick={(e) => setTheme('system', e)}><Monitor size={14} /> Auto</button>
+						<button class:on={$settings.theme === 'light'} onclick={(e) => setTheme('light', e)}>Light</button>
+						<button class:on={$settings.theme === 'dark'} onclick={(e) => setTheme('dark', e)}>Dark</button>
+						<button class:on={$settings.theme === 'system'} onclick={(e) => setTheme('system', e)}>Auto</button>
 					</div>
 				</div>
 				<div class="field">
@@ -157,6 +155,7 @@
 								class="accent"
 								class:on={$settings.accent === a.id}
 								style:--sh={a.h}
+					style:--sh2={a.h2}
 								onclick={() => ($settings.accent = a.id)}
 								aria-label="{a.label} accent"
 								title={a.label}
@@ -185,7 +184,7 @@
 			</section>
 
 			<section>
-				<h3><Timer size={15} /> Study</h3>
+				<h3><span class="index">03</span> Study</h3>
 				<div class="field">
 					<div class="label-row"><span class="label">Daily study budget</span><span class="num val">{formatHours($settings.dailyHours)}</span></div>
 					<input class="range" type="range" min="0.5" max="12" step="0.5" bind:value={$settings.dailyHours} style:--fill={fill($settings.dailyHours, 0.5, 12)} aria-label="Daily study budget" />
@@ -215,23 +214,23 @@
 			</section>
 
 			<section>
-				<h3><Download size={15} /> Your data</h3>
+				<h3><span class="index">04</span> Your data</h3>
 				<div class="data-stats">
 					<span><strong class="num">{$deadlines.length}</strong> deadlines</span>
 					<span><strong class="num">{$tasks.length}</strong> tasks</span>
 					<span><strong class="num">{formatHours(totalFocus)}</strong> focused</span>
 				</div>
 				<div class="data-btns">
-					<button class="btn btn-soft btn-sm" onclick={exportData}><Download size={14} /> Export</button>
-					<button class="btn btn-soft btn-sm" onclick={() => fileInput.click()}><Upload size={14} /> Import</button>
-					<button class="btn btn-soft btn-sm" onclick={loadDemo}><Sparkles size={14} /> Sample data</button>
+					<button class="btn btn-soft btn-sm" onclick={exportData}>Export JSON</button>
+					<button class="btn btn-soft btn-sm" onclick={() => fileInput.click()}>Import</button>
+					<button class="btn btn-soft btn-sm" onclick={loadDemo}>Sample data</button>
 					<input type="file" accept="application/json,.json" bind:this={fileInput} onchange={importData} hidden />
 				</div>
-				<button class="btn btn-ghost btn-danger btn-sm erase" onclick={resetAll}><Trash size={14} /> Erase everything</button>
+				<button class="btn btn-ghost btn-danger btn-sm erase" onclick={resetAll}>Erase everything</button>
 			</section>
 
 			<section>
-				<h3><Keyboard size={15} /> Shortcuts</h3>
+				<h3><span class="index">05</span> Shortcuts</h3>
 				<ul class="keys">
 					{#each shortcuts as [k, label]}
 						<li><span>{label}</span><span class="kbd">{k}</span></li>
@@ -301,8 +300,8 @@
 		letter-spacing: 0.02em;
 		color: var(--text-2);
 	}
-	h3 :global(svg) {
-		color: var(--accent);
+	h3 .index {
+		font-size: 11px;
 	}
 	.account {
 		display: flex;
@@ -311,7 +310,6 @@
 		padding: 12px 12px 12px 14px;
 		border-radius: 14px;
 		box-shadow: none;
-		color: var(--accent);
 	}
 	.acc-body {
 		flex: 1;
@@ -336,7 +334,7 @@
 		width: 32px;
 		height: 32px;
 		border-radius: 50%;
-		background: linear-gradient(135deg, oklch(0.66 0.2 var(--sh)), oklch(0.66 0.19 calc(var(--sh) + 45)));
+		background: linear-gradient(135deg, oklch(0.66 0.2 var(--sh)), oklch(0.64 0.18 var(--sh2)));
 		box-shadow: inset 0 0 0 1px oklch(1 0 0 / 0.15);
 		transition: transform 0.3s var(--ease-spring), box-shadow 0.2s;
 	}

@@ -6,10 +6,11 @@
 	import TypeTile from '../ui/TypeTile.svelte';
 	import { timer, remaining, progress, MODES, start, pause, reset, setMode, setDeadline, finishEarly } from '$lib/focus.js';
 	import { deadlines, stats, settings, plan } from '$lib/stores.js';
-	import { focusTarget, settingsOpen, toast } from '$lib/ui.js';
+	import { focusTarget, settingsOpen, toast, libraryOpen } from '$lib/ui.js';
+	import { PRESETS, TECHNIQUES, presetFor } from '$lib/content/techniques.js';
 	import { formatClock, formatHours, relativeDay } from '$lib/utils/date.js';
 	import { seriesColor } from '$lib/constants.js';
-	import { Play, Pause, RotateCcw, SkipForward, Check, Volume, VolumeOff, Bell, Coffee, Brain, Target, Settings } from '$lib/icons.js';
+	import { Play, Pause, RotateCcw, SkipForward, Check, Volume, VolumeOff, Settings } from '$lib/icons.js';
 
 	const SIZE = 340;
 	const STROKE = 10;
@@ -47,6 +48,11 @@
 		if (notifyState === 'granted') toast('You’ll get a notification when a session ends.', { tone: 'success' });
 	}
 
+	const activePreset = $derived(presetFor($settings));
+	function applyPreset(p) {
+		settings.update((s) => ({ ...s, focusMinutes: p.focus, shortBreak: p.short, longBreak: p.long }));
+	}
+
 	const timeOf = (ms) => new Date(ms).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
 	const round = $derived(($timer.round % 4) + (isBreak ? 0 : 1));
 </script>
@@ -63,7 +69,7 @@
 				{#if $settings.sound}<Volume size={17} />{:else}<VolumeOff size={17} />{/if}
 			</button>
 			{#if notifyState === 'default'}
-				<button class="btn btn-soft btn-sm" onclick={askNotify}><Bell size={15} /> Notify me</button>
+				<button class="btn btn-soft btn-sm" onclick={askNotify}>Notify me</button>
 			{/if}
 			<button class="btn btn-soft btn-icon" onclick={() => ($settingsOpen = true)} aria-label="Timer settings" title="Timer settings">
 				<Settings size={17} />
@@ -76,7 +82,6 @@
 			<div class="seg modes">
 				{#each Object.entries(MODES) as [id, m]}
 					<button class:on={$timer.mode === id} onclick={() => setMode(id)} disabled={running}>
-						{#if id === 'focus'}<Brain size={14} />{:else}<Coffee size={14} />{/if}
 						{m.label}
 					</button>
 				{/each}
@@ -138,7 +143,7 @@
 					<RotateCcw size={18} />
 				</button>
 				<button class="play" onclick={() => (running ? pause() : start())} aria-label={running ? 'Pause' : 'Start'}>
-					{#if running}<Pause size={30} />{:else}<Play size={30} />{/if}
+					{#if running}<Pause size={30} weight="fill" />{:else}<Play size={30} weight="fill" />{/if}
 				</button>
 				<button
 					class="btn btn-soft btn-icon ctl"
@@ -146,18 +151,18 @@
 					aria-label={isBreak ? 'Skip break' : 'Finish and log'}
 					title={isBreak ? 'Skip break' : 'Finish now and log the time'}
 				>
-					{#if isBreak}<SkipForward size={18} />{:else}<Check size={18} />{/if}
+					{#if isBreak}<SkipForward size={18} />{:else}<Check size={18} weight="bold" />{/if}
 				</button>
 			</div>
 			<p class="hint faint">
-				<span class="kbd">Space</span> start / pause · {$settings.focusMinutes} / {$settings.shortBreak} / {$settings.longBreak} min
+				<span class="kbd">Space</span> start / pause · {activePreset?.name ?? 'Custom'} {$settings.focusMinutes} / {$settings.shortBreak} / {$settings.longBreak} min
 			</p>
 		</article>
 
 		<div class="side">
 			<article class="card card-pad">
 				<div class="card-head">
-					<h2 class="card-title"><span class="ico"><Target size={16} /></span> Working on</h2>
+					<h2 class="card-title">Working on</h2>
 				</div>
 				<select
 					class="input"
@@ -189,8 +194,34 @@
 
 			<article class="card card-pad">
 				<div class="card-head">
-					<h2 class="card-title"><span class="ico"><Brain size={16} /></span> Today</h2>
-					<span class="mono faint">{formatHours($stats.focusToday / 60)}</span>
+					<h2 class="card-title">Timer preset</h2>
+					<span class="card-meta">{PRESETS.length} presets</span>
+				</div>
+				<div class="presets" role="radiogroup" aria-label="Timer preset">
+					{#each PRESETS as p}
+						<button
+							class="preset"
+							class:on={activePreset?.id === p.id}
+							role="radio"
+							aria-checked={activePreset?.id === p.id}
+							disabled={$timer.status !== 'idle'}
+							onclick={() => applyPreset(p)}
+							title={p.note}
+						>
+							<span class="p-name">{p.name}</span>
+							<span class="p-min num">{p.focus}/{p.short}/{p.long}</span>
+						</button>
+					{/each}
+				</div>
+				<button class="lib btn btn-ghost btn-sm" onclick={() => libraryOpen.set(true)}>
+					Browse {TECHNIQUES.length} study techniques →
+				</button>
+			</article>
+
+			<article class="card card-pad">
+				<div class="card-head">
+					<h2 class="card-title">Today</h2>
+					<span class="card-meta">{formatHours($stats.focusToday / 60)}</span>
 				</div>
 				<div class="today-stats">
 					<div><span class="num big">{$stats.sessionsToday.length}</span><span class="faint">sessions</span></div>
@@ -405,6 +436,44 @@
 	.none {
 		font-size: 13.5px;
 		margin-top: 12px;
+	}
+	.presets {
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		gap: 8px;
+	}
+	.preset {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 2px;
+		padding: 10px 12px;
+		border-radius: 12px;
+		border: 1px solid var(--border);
+		background: var(--surface-2);
+		text-align: left;
+		transition: border-color 0.2s, background 0.2s;
+	}
+	.preset:hover:not(:disabled) {
+		border-color: var(--border-2);
+	}
+	.preset.on {
+		border-color: var(--accent);
+		background: var(--accent-soft);
+	}
+	.p-name {
+		font-size: 13px;
+		font-weight: 600;
+	}
+	.p-min {
+		font-size: 11.5px;
+		color: var(--text-3);
+	}
+	.preset.on .p-min {
+		color: var(--accent-ink);
+	}
+	.lib {
+		margin: 12px 0 -6px -10px;
 	}
 	.today-stats {
 		display: grid;

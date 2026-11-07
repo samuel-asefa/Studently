@@ -39,7 +39,7 @@
 		<div class="seg block types">
 			{#each DEADLINE_TYPES as t}
 				<button type="button" class:on={type === t.id} onclick={() => (type = t.id)}>
-					<t.icon size={14} />
+					<t.icon size={15} />
 					<span>{t.short ?? t.label}</span>
 				</button>
 			{/each}
@@ -54,9 +54,9 @@
 	<div class="field">
 		<span class="label">Hours needed</span>
 		<div class="stepper">
-			<button type="button" class="btn btn-soft btn-icon" onclick={() => step(-0.5)} aria-label="Fewer hours"><Minus size={15} /></button>
+			<button type="button" class="btn btn-soft btn-icon" onclick={() => step(-0.5)} aria-label="Fewer hours"><Minus size={15} weight="bold" /></button>
 			<input class="input num" type="number" min="0.5" max="200" step="0.5" bind:value={hours} aria-label="Hours needed" />
-			<button type="button" class="btn btn-soft btn-icon" onclick={() => step(0.5)} aria-label="More hours"><Plus size={15} /></button>
+			<button type="button" class="btn btn-soft btn-icon" onclick={() => step(0.5)} aria-label="More hours"><Plus size={15} weight="bold" /></button>
 		</div>
 	</div>
 
@@ -94,6 +94,7 @@
 	.types > button span {
 		display: inline;
 	}
+
 	.stepper {
 		display: flex;
 		gap: 6px;

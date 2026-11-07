@@ -1,14 +1,14 @@
 import {
-	FileText, GraduationCap, Rocket, Trophy, Layers,
-	LayoutDashboard, CalendarClock, ListChecks, Timer, Tag
+	FileText, Exam, Rocket, Trophy, Shapes,
+	LayoutDashboard, CalendarClock, ListChecks, Timer, Tag, ChartColumn
 } from './icons.js';
 
 export const DEADLINE_TYPES = [
-	{ id: 'assignment', label: 'Assignment', icon: FileText },
-	{ id: 'exam', label: 'Exam', icon: GraduationCap },
-	{ id: 'project', label: 'Project', icon: Rocket },
-	{ id: 'ec', label: 'Extracurricular', short: 'EC', icon: Trophy },
-	{ id: 'other', label: 'Other', icon: Layers }
+	{ id: 'assignment', label: 'Assignment', code: 'AS', icon: FileText },
+	{ id: 'exam', label: 'Exam', code: 'EX', icon: Exam },
+	{ id: 'project', label: 'Project', code: 'PR', icon: Rocket },
+	{ id: 'ec', label: 'Extracurricular', short: 'EC', code: 'EC', icon: Trophy },
+	{ id: 'other', label: 'Other', code: 'OT', icon: Shapes }
 ];
 
 export const typeInfo = (id) => DEADLINE_TYPES.find((t) => t.id === id) ?? DEADLINE_TYPES[4];
@@ -28,21 +28,29 @@ export function priorityFor(weight = 1) {
 	return best;
 }
 
+// Same order as the accents: blue → green → warm → purple, then neutral.
 export const CATEGORY_COLORS = [
-	'#8b5cf6', '#6366f1', '#3b82f6', '#0ea5e9', '#06b6d4', '#14b8a6',
-	'#10b981', '#84cc16', '#eab308', '#f59e0b', '#f97316', '#ef4444',
-	'#f43f5e', '#ec4899', '#d946ef', '#64748b'
+	'#3b82f6', '#0ea5e9', '#06b6d4', '#14b8a6', '#10b981', '#84cc16',
+	'#eab308', '#f59e0b', '#f97316', '#ef4444', '#f43f5e', '#ec4899',
+	'#d946ef', '#a855f7', '#8b5cf6', '#64748b'
 ];
 
+// h is the main hue, h2 the second stop of its gradient (OKLCH degrees).
+// Ordered around the color wheel: blue → green → warm → purple.
 export const ACCENTS = [
-	{ id: 'iris', label: 'Iris', h: 285 },
-	{ id: 'ocean', label: 'Ocean', h: 235 },
-	{ id: 'mint', label: 'Mint', h: 165 },
-	{ id: 'lime', label: 'Lime', h: 128 },
-	{ id: 'gold', label: 'Gold', h: 80 },
-	{ id: 'ember', label: 'Ember', h: 38 },
-	{ id: 'rose', label: 'Rose', h: 355 }
+	{ id: 'blue', label: 'Blue', h: 258, h2: 232 },
+	{ id: 'sky', label: 'Sky', h: 228, h2: 200 },
+	{ id: 'mint', label: 'Mint', h: 165, h2: 190 },
+	{ id: 'gold', label: 'Gold', h: 80, h2: 55 },
+	{ id: 'ember', label: 'Ember', h: 40, h2: 18 },
+	{ id: 'rose', label: 'Rose', h: 355, h2: 15 },
+	{ id: 'iris', label: 'Iris', h: 285, h2: 318 }
 ];
+
+// Old ids from earlier versions.
+const ACCENT_ALIASES = { ocean: 'sky', lime: 'mint' };
+export const accentFor = (id) =>
+	ACCENTS.find((a) => a.id === (ACCENT_ALIASES[id] ?? id)) ?? ACCENTS[0];
 
 export const FONTS = [
 	{ id: 'Geist', label: 'Geist', url: null },
@@ -83,5 +91,6 @@ export const NAV = [
 	{ id: 'planner', label: 'Planner', key: '2', icon: CalendarClock },
 	{ id: 'tasks', label: 'Tasks', key: '3', icon: ListChecks },
 	{ id: 'focus', label: 'Focus', key: '4', icon: Timer },
-	{ id: 'categories', label: 'Categories', key: '5', icon: Tag }
+	{ id: 'insights', label: 'Insights', key: '5', icon: ChartColumn },
+	{ id: 'categories', label: 'Categories', key: '6', icon: Tag }
 ];

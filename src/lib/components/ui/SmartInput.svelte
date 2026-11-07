@@ -3,7 +3,6 @@
 	import { backOut } from 'svelte/easing';
 	import { parseQuick, describeParse } from '$lib/utils/parse.js';
 	import { categories } from '$lib/stores.js';
-	import { WandSparkles, CalendarDays, Clock, Zap, Layers, Tag, CornerDownLeft } from '$lib/icons.js';
 
 	let {
 		value = $bindable(''),
@@ -16,7 +15,7 @@
 	const parsed = $derived(parseQuick(value, { categories: Object.keys($categories) }));
 	const chips = $derived(value.trim() ? describeParse(parsed) : []);
 
-	const ICON = { date: CalendarDays, hours: Clock, priority: Zap, type: Layers, category: Tag };
+	const LABEL = { date: 'Due', hours: 'Time', priority: 'Priority', type: 'Type', category: 'In' };
 
 	function onkeydown(e) {
 		if (e.key === 'Enter' && !e.isComposing) {
@@ -28,7 +27,6 @@
 
 <div class="smart" class:has-chips={chips.length > 0}>
 	<div class="field">
-		<span class="lead"><WandSparkles size={18} /></span>
 		<!-- svelte-ignore a11y_autofocus -->
 		<input
 			bind:this={inputEl}
@@ -42,20 +40,15 @@
 			spellcheck="false"
 		/>
 		<button class="btn btn-primary btn-sm go" disabled={!parsed.name} onclick={() => onsubmit?.(parsed)}>
-			Add <span class="kbd enter"><CornerDownLeft size={11} /></span>
+			Add <span class="kbd enter">↵</span>
 		</button>
 	</div>
 	{#if chips.length}
 		<div class="chips">
-			<span class="hint">Understood:</span>
 			{#each chips as c (c.kind)}
-				{@const Icon = ICON[c.kind]}
-				<span
-					class="chip {c.kind === 'priority' ? c.tone || 'accent' : 'accent'}"
-					in:scale={{ start: 0.7, duration: 280, easing: backOut }}
-				>
-					<Icon size={12} />
-					{c.label}
+				<span class="parsed" class:tone={c.kind === 'priority'} data-tone={c.tone} in:scale={{ start: 0.8, duration: 260, easing: backOut }}>
+					<span class="k">{LABEL[c.kind]}</span>
+					<span class="v">{c.label}</span>
 				</span>
 			{/each}
 		</div>
@@ -73,18 +66,9 @@
 		display: flex;
 		align-items: center;
 	}
-	.lead {
-		position: absolute;
-		left: 16px;
-		top: 50%;
-		transform: translateY(-50%);
-		color: var(--accent);
-		pointer-events: none;
-		display: grid;
-	}
 	.input {
 		height: 54px;
-		padding-left: 46px;
+		padding-left: 18px;
 		padding-right: 96px;
 		font-size: 15.5px;
 		border-radius: 16px;
@@ -107,11 +91,43 @@
 		flex-wrap: wrap;
 		align-items: center;
 		gap: 6px;
-		padding-left: 4px;
+		padding-left: 2px;
 	}
-	.hint {
+	.parsed {
+		display: inline-flex;
+		align-items: stretch;
+		height: 24px;
+		border-radius: 7px;
+		overflow: hidden;
+		border: 1px solid var(--border-2);
 		font-size: 12px;
+	}
+	.parsed .k {
+		display: grid;
+		place-items: center;
+		padding: 0 7px;
+		font-family: var(--font-mono);
+		font-size: 10px;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
 		color: var(--text-3);
-		margin-right: 2px;
+		background: var(--surface-2);
+		border-right: 1px solid var(--border);
+	}
+	.parsed .v {
+		display: grid;
+		place-items: center;
+		padding: 0 8px;
+		font-weight: 550;
+		color: var(--text);
+	}
+	.parsed[data-tone='warn'] .v {
+		color: var(--warn);
+	}
+	.parsed[data-tone='danger'] .v {
+		color: var(--danger);
+	}
+	.parsed[data-tone='success'] .v {
+		color: var(--success);
 	}
 </style>

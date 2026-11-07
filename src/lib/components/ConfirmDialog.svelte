@@ -2,7 +2,6 @@
 	import { confirmState } from '$lib/ui.js';
 	import { fade, scale } from 'svelte/transition';
 	import { cubicOut } from 'svelte/easing';
-	import { TriangleAlert, CircleAlert } from '$lib/icons.js';
 	import { autofocus } from '$lib/utils/use.js';
 
 	function close(value) {
@@ -32,11 +31,12 @@
 			tabindex="-1"
 			transition:scale={{ start: 0.94, duration: 260, easing: cubicOut }}
 			onclick={(e) => e.stopPropagation()}
-			onkeydown={(e) => e.stopPropagation()}
+			onkeydown={(e) => {
+				e.stopPropagation();
+				if (e.key === 'Escape') close(false);
+			}}
 		>
-			<div class="ico" class:danger={s.danger}>
-				{#if s.danger}<TriangleAlert size={20} />{:else}<CircleAlert size={20} />{/if}
-			</div>
+			<span class="rule" class:danger={s.danger}></span>
 			<h2 id="confirm-title">{s.title}</h2>
 			{#if s.message}<p>{s.message}</p>{/if}
 			<div class="actions">
@@ -71,19 +71,19 @@
 		background: var(--surface-solid);
 		box-shadow: var(--shadow-lg);
 	}
-	.ico {
-		display: grid;
-		place-items: center;
-		width: 44px;
-		height: 44px;
-		border-radius: 14px;
-		background: var(--accent-soft);
-		color: var(--accent-ink);
-		margin-bottom: 16px;
+	.dialog {
+		overflow: hidden;
 	}
-	.ico.danger {
-		background: oklch(0.66 0.21 25 / 0.14);
-		color: var(--danger);
+	.rule {
+		position: absolute;
+		left: 0;
+		right: 0;
+		top: 0;
+		height: 3px;
+		background: linear-gradient(90deg, var(--btn-a), var(--btn-b));
+	}
+	.rule.danger {
+		background: var(--danger);
 	}
 	h2 {
 		font-size: 18px;
