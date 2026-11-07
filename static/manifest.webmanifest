@@ -1,0 +1,13 @@
+{
+	"name": "Studently",
+	"short_name": "Studently",
+	"description": "Smart scheduling, focus sessions and tasks for students.",
+	"start_url": "/",
+	"display": "standalone",
+	"background_color": "#0d0c14",
+	"theme_color": "#0d0c14",
+	"icons": [
+		{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+		{ "src": "/favicon.png", "sizes": "512x512", "type": "image/png" }
+	]
+}

@@ -1,19 +1,97 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 	<head>
 		<meta charset="utf-8" />
-		<link rel="icon" href="/favicon.png" />
-		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+		<title>Studently — Your semester, under control</title>
+		<meta
+			name="description"
+			content="Studently turns your deadlines into a calm daily plan. Smart scheduling, a focus timer that tracks progress, and tasks that sync everywhere."
+		/>
+		<meta name="theme-color" content="#0d0c14" media="(prefers-color-scheme: dark)" />
+		<meta name="theme-color" content="#f7f6f3" media="(prefers-color-scheme: light)" />
+		<meta property="og:title" content="Studently — Your semester, under control" />
+		<meta
+			property="og:description"
+			content="Smart scheduling, focus sessions and tasks for students."
+		/>
+		<meta property="og:type" content="website" />
+		<link rel="icon" href="%sveltekit.assets%/favicon.svg" type="image/svg+xml" />
+		<link rel="alternate icon" href="%sveltekit.assets%/favicon.png" />
+		<link rel="manifest" href="%sveltekit.assets%/manifest.webmanifest" />
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 		<link
-			href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+			href="https://fonts.googleapis.com/css2?family=Geist:wght@300..800&family=Geist+Mono:wght@400..600&family=Instrument+Serif:ital@0;1&display=swap"
 			rel="stylesheet"
 		/>
-		<meta name="description" content="Studently - A modern task management app for students" />
+		<script>
+			// Apply theme + accent before first paint so there is no flash.
+			(function () {
+				try {
+					var s = JSON.parse(localStorage.getItem('studently:settings') || '{}');
+					var t = s.theme;
+					if (!t) {
+						var old = localStorage.getItem('theme');
+						t = old ? JSON.parse(old) : 'system';
+					}
+					if (t !== 'light' && t !== 'dark') {
+						t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+					}
+					var hues = { iris: 285, ocean: 235, mint: 165, lime: 128, gold: 80, ember: 38, rose: 355 };
+					var root = document.documentElement;
+					root.dataset.theme = t;
+					root.style.setProperty('--accent-h', hues[s.accent] || 285);
+				} catch (e) {
+					document.documentElement.dataset.theme = 'dark';
+				}
+			})();
+		</script>
+		<style>
+			#splash {
+				position: fixed;
+				inset: 0;
+				display: grid;
+				place-items: center;
+				background: oklch(0.155 0.014 var(--accent-h, 285));
+				z-index: 9999;
+				transition: opacity 0.5s ease, visibility 0.5s;
+			}
+			[data-theme='light'] #splash {
+				background: oklch(0.975 0.006 var(--accent-h, 285));
+			}
+			#splash.hide {
+				opacity: 0;
+				visibility: hidden;
+			}
+			#splash svg {
+				width: 56px;
+				height: 56px;
+				animation: splash-pulse 1.6s ease-in-out infinite;
+				filter: drop-shadow(0 10px 30px oklch(0.65 0.2 var(--accent-h, 285) / 0.5));
+			}
+			@keyframes splash-pulse {
+				0%, 100% { transform: scale(0.92) rotate(0deg); opacity: 0.8; }
+				50% { transform: scale(1.04) rotate(45deg); opacity: 1; }
+			}
+		</style>
 		%sveltekit.head%
 	</head>
 	<body data-sveltekit-preload-data="hover">
+		<div id="splash" aria-hidden="true">
+			<svg viewBox="0 0 48 48">
+				<defs>
+					<linearGradient id="sg" x1="0" y1="0" x2="1" y2="1">
+						<stop offset="0" stop-color="oklch(0.72 0.19 var(--accent-h, 285))" />
+						<stop offset="1" stop-color="oklch(0.7 0.18 calc(var(--accent-h, 285) + 55))" />
+					</linearGradient>
+				</defs>
+				<path
+					fill="url(#sg)"
+					d="M24 4C25.8 15.5 32.5 22.2 44 24 32.5 25.8 25.8 32.5 24 44 22.2 32.5 15.5 25.8 4 24 15.5 22.2 22.2 15.5 24 4Z"
+				/>
+			</svg>
+		</div>
 		<div style="display: contents">%sveltekit.body%</div>
 	</body>
 </html>
